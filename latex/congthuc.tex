@@ -1,0 +1,34 @@
+\documentclass[12pt, a4paper]{article}
+
+% Khai báo thư viện hỗ trợ tiếng Việt và hiển thị font chuẩn
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[utf8]{vietnam}
+
+% Khai báo thư viện hỗ trợ công thức toán học
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+
+\title{Test Môi Trường Biên Dịch LaTeX Bằng Docker}
+\author{VS Code x Docker}
+\date{\today}
+\maketitle
+
+\section{Kiểm tra hiển thị chữ và công thức}
+Đây là file test để kiểm tra xem Docker biên dịch LaTeX qua VS Code đã hoạt động ngon lành chưa. Dưới đây là công thức độ tương đồng Cosine (Cosine Similarity):
+
+\textbf{1. Công thức tổng quát:}
+$$
+\text{Cosine Similarity}(\mathbf{A}, \mathbf{B}) = \cos(\theta) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\| \|\mathbf{B}\|}
+$$
+
+\textbf{2. Công thức triển khai chi tiết:}
+$$
+\text{Cosine Similarity} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}}
+$$
+
+Nếu m nhìn thấy cái file PDF oke xuất ra có công thức đẹp nét căng, tiếng Việt không bị lỗi font thì chúc mừng, setup chuẩn bài rồi nhé! Quẩy thôi!
+
+\end{document}

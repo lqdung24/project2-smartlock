@@ -1,0 +1,3 @@
+dependencies:
+  espressif/esp32-camera: "^2.0.4"
+  espressif/quirc: "^1.1.6"

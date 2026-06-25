@@ -1,0 +1,126 @@
+{
+    "@@locale": "en",
+    "appTitle": "Smart Lock App",
+    "@appTitle": {
+        "description": "The title of the application"
+    },
+    "welcomeBack": "Welcome Back",
+    "loginToManageHome": "Login to manage your home",
+    "phoneNumber": "PHONE NUMBER",
+    "enterPhoneNumber": "Enter phone number",
+    "continueButton": "Continue",
+    "loginWithFaceID": "Login with FaceID",
+    "registerAccount": "Register Account",
+    "forgotPassword": "Forgot Password?",
+    "myDevices": "My Devices",
+    "add": "Add",
+    "mainDoor": "Main Door",
+    "backDoor": "Back Door",
+    "bedroom": "Bedroom",
+    "online": "Online",
+    "offline": "Offline",
+    "recentActivity": "Recent Activity",
+    "unlockedBy": "Unlocked by {name}",
+    "@unlockedBy": {
+        "placeholders": {
+            "name": {}
+        }
+    },
+    "autoLock": "Auto Lock",
+    "after5Minutes": "After 5 minutes",
+    "activityLog": "Activity Log",
+    "searchEvents": "Search events...",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "selectDate": "Select Date",
+    "morning": "Morning",
+    "doorOpened": "{doorName} opened",
+    "@doorOpened": {
+        "placeholders": {
+            "doorName": {}
+        }
+    },
+    "byAdminFaceID": "By Admin (FaceID)",
+    "doorLocked": "{doorName} locked",
+    "@doorLocked": {
+        "placeholders": {
+            "doorName": {}
+        }
+    },
+    "autoLockScheduled": "Auto lock scheduled",
+    "warningLowBattery": "Warning: Low Battery",
+    "mainDoorBattery": "Main Door: {percentage} remaining",
+    "@mainDoorBattery": {
+        "placeholders": {
+            "percentage": {}
+        }
+    },
+    "byMemberFingerprint": "By Member: {name} (Fingerprint)",
+    "@byMemberFingerprint": {
+        "placeholders": {
+            "name": {}
+        }
+    },
+    "timesOpenedToday": "{count} times opened today",
+    "@timesOpenedToday": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "safety": "Safety",
+    "alerts": "Alerts",
+    "deviceManagement": "Device Management",
+    "devicesConnected": "{count} devices connected",
+    "@devicesConnected": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "frontHall": "Location: Front Hall",
+    "backyard": "Location: Backyard",
+    "firstFloor": "Location: First Floor",
+    "unlock": "Unlock",
+    "disconnected": "Disconnected from device",
+    "addNewDevice": "Add new device",
+    "settings": "Settings",
+    "accountSecurity": "Account Security",
+    "faceID": "FaceID",
+    "password": "Password",
+    "notifications": "Notifications",
+    "pushAlerts": "Push Alerts",
+    "criticalAlerts": "Critical Alerts",
+    "smartFeatures": "Smart Features",
+    "autoLockTimer": "Auto Lock Timer",
+    "speakerVolume": "Speaker Volume",
+    "seconds": "{count} seconds",
+    "@seconds": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "medium": "Medium",
+    "helpAndSupport": "Help & Support",
+    "faq": "FAQ",
+    "contactUs": "Contact Us",
+    "about": "About",
+    "version": "Version",
+    "termsOfService": "Terms of Service",
+    "logout": "Logout",
+    "account": "ACCOUNT",
+    "passwordLabel": "PASSWORD",
+    "enterEmailOrPhone": "Enter email or phone",
+    "enterPassword": "Enter password",
+    "loginButton": "Login",
+    "changePassword": "Change Password",
+    "oldPassword": "Old Password",
+    "enterOldPassword": "Enter your old password",
+    "pleaseEnterOldPassword": "Please enter your old password",
+    "newPassword": "New Password",
+    "enterNewPassword": "Enter your new password",
+    "pleaseEnterNewPassword": "Please enter your new password",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "confirmNewPassword": "Confirm New Password",
+    "enterConfirmNewPassword": "Confirm your new password",
+    "passwordsDoNotMatch": "Passwords do not match"
+}

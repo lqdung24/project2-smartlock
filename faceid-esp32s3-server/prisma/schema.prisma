@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model House {
+  id     Int      @id @default(autoincrement())
+  name   String
+  users  User[]
+  device Device[]
+}
+
+model User {
+  id            Int             @id @default(autoincrement())
+  email         String          @unique
+  name          String?
+  password      String
+  role          Role            @default(OWNER)
+  houseId       Int?
+  house         House?          @relation(fields: [houseId], references: [id], onDelete: SetNull)
+  refreshTokens User_Token[]
+  requestsSent  House_Request[] @relation("requester")
+  requestsOwned House_Request[] @relation("owner")
+
+  enrolFaces FaceData[] @relation("user_face")
+
+  userLocks User_Lock[] @relation("user_lock")
+
+  deviceLogs DeviceLog[] @relation("device_log_user")
+}
+
+model User_Token {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  refreshToken String
+  expireTime   DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Device {
+  id          Int      @id @default(autoincrement())
+  name        String
+  hardwareId  String   @unique
+  mqttToken   String
+  tokenExpiry DateTime
+  houseId     Int
+  house       House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+
+  userLocks  User_Lock[] @relation("user_lock_v2")
+  deviceLogs DeviceLog[] @relation("device_log_device")
+}
+
+model House_Request {
+  id          Int           @id @default(autoincrement())
+  createAt    DateTime      @default(now())
+  requesterId Int
+  requestUser User          @relation("requester", fields: [requesterId], references: [id])
+  ownerId     Int
+  owner       User          @relation("owner", fields: [ownerId], references: [id])
+  status      RequestStatus @default(PENDING)
+}
+
+enum Role {
+  OWNER
+  MEMBER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DELETED
+}
+
+model FaceData {
+  id       Int      @id @default(autoincrement())
+  label    String
+  img_url  String
+  userId   Int
+  createAt DateTime @default(now())
+
+  user        User  @relation("user_face", fields: [userId], references: [id])
+  embedVector Bytes
+  face_id     Int
+}
+
+model User_Lock {
+  id     Int @id @default(autoincrement())
+  userId Int
+  lockId Int
+
+  user   User   @relation("user_lock", fields: [userId], references: [id])
+  device Device @relation("user_lock_v2", fields: [lockId], references: [id])
+}
+
+enum Source {
+  APP
+  FACEID
+}
+
+model DeviceLog {
+  id       Int      @id @default(autoincrement())
+  deviceId Int
+  time     DateTime
+  userId   Int?
+  source   Source   @default(FACEID)
+
+  user   User?  @relation("device_log_user", fields: [userId], references: [id])
+  device Device @relation("device_log_device", fields: [deviceId], references: [id])
+}

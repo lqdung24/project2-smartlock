@@ -1,0 +1,82 @@
+\chapter{PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG}
+
+\section{Phân tích yêu cầu hệ thống}
+\subsection{Yêu cầu chức năng (Functional Requirements)}
+% Viết phân tích chi tiết các nhóm chức năng tại đây (Khoảng 600 từ)
+\begin{itemize}
+    \item Nhóm chức năng kiểm soát và nhận diện tại thiết bị biên.
+    \item Nhóm chức năng cấu hình và quản trị thông qua Mobile App.
+    \item Nhóm chức năng an ninh, giám sát và cảnh báo hệ thống.
+\end{itemize}
+
+\subsection{Yêu cầu phi chức năng (Non-functional Requirements)}
+% Viết đặc tả chỉ số chất lượng phần cứng, phần mềm (Khoảng 400 từ)
+% Chèn bảng đặc tả hiệu năng ở đây
+\begin{table}[htbp]
+\caption{Đặc tả các chỉ số phi chức năng của hệ thống}
+\label{tab:non_functional}
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{STT} & \textbf{Tiêu chí chất lượng} & \textbf{Ngưỡng thông số kỹ thuật} \\ \hline
+1 & Thời gian phản hồi nhận diện & $< 1.5$ giây \\ \hline
+2 & Tỷ lệ chấp nhận sai người (FAR) & $< 0.001\%$ \\ \hline
+3 & Tỷ lệ từ chối đúng người (FRR) & $< 1\%$ \\ \hline
+4 & Tính sẵn sàng của hệ thống (Availability) & Chạy độc lập 24/7 kể cả mất Internet \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Sơ đồ kiến trúc hệ thống (System Architecture)}
+\subsection{Kiến trúc tổng thể hệ thống mạng Edge-to-Cloud}
+% Phân tích mối quan hệ giữa ESP32-S3, Server NestJS và App Flutter (Khoảng 500 từ)
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.8\textwidth]{images/ch3/system_architecture.png}
+% \caption{Sơ đồ kiến trúc tổng thể hệ thống}
+% \end{figure}
+
+\subsection{Sơ đồ khối chức năng phần cứng tại biên}
+% Đặc tả luồng tương tác linh kiện ngoại vi kết nối với ESP32-S3 (Khoảng 500 từ)
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.8\textwidth]{images/ch3/hardware_block.png}
+% \caption{Sơ đồ khối chức năng phần cứng thiết bị khóa}
+% \end{figure}
+
+\section{Các biểu đồ mô hình hóa phần mềm UML}
+\subsection{Biểu đồ Use Case tổng thể và đặc tả Use Case}
+% Mô tả các Actor và các ca sử dụng tương ứng (Khoảng 600 từ)
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.7\textwidth]{images/ch3/usecase_diagram.png}
+% \caption{Biểu đồ Use Case tổng thể của hệ thống}
+% \end{figure}
+
+\subsection{Biểu đồ Hoạt động (Activity Diagram)}
+% Giải thích luồng xử lý thuật toán nhận dạng rẽ nhánh điều kiện (Khoảng 900 từ)
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.6\textwidth]{images/ch3/activity_recognition.png}
+% \caption{Biểu đồ hoạt động luồng xử lý nhận diện khuôn mặt mở cửa}
+% \end{figure}
+
+\subsection{Biểu đồ Trình tự (Sequence Diagram)}
+% Mô tả thông điệp truyền tải thời gian thực đa giao thức HTTP/WebSocket/MQTT (Khoảng 900 từ)
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.9\textwidth]{images/ch3/sequence_remote_open.png}
+% \caption{Biểu đồ trình tự chức năng ra lệnh mở cửa từ xa từ Mobile App}
+% \end{figure}
+
+\section{Thiết kế cơ sở dữ liệu (Database Design)}
+\subsection{Thiết kế cấu trúc lưu trữ nhúng cục bộ trên bộ nhớ Flash}
+% Đặc tả phân vùng NVS, tính toán kích thước ô nhớ 512 dimensions float vector (Khoảng 400 từ)
+
+\subsection{Thiết kế mô hình dữ liệu quan hệ tập trung trên Server}
+% Phân tích cấu trúc các bảng thực thể (Users, Tenants, Occupants, AccessLogs...) 
+% Giải thích logic ánh xạ mối quan hệ thừa kế (R8a) và quan hệ 1-N (R7) (Khoảng 600 từ)
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=1.0\textwidth]{images/ch3/erd_diagram.png}
+% \caption{Sơ đồ quan hệ thực thể ERD hệ thống quản lý tập trung}
+% \end{figure}

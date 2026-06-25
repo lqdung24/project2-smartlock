@@ -1,0 +1,81 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel}
+\usepackage{geometry}
+\geometry{left=3cm,right=2cm,top=2.5cm,bottom=2.5cm}
+
+\begin{document}
+
+    \chapter{GIỚI THIỆU}
+    \section{Đặt vấn đề}
+    \begin{itemize}
+        \item Sự phát triển của IoT và nhu cầu về bảo mật thông minh trong kỷ nguyên số.
+        \item Hạn chế của các phương pháp bảo mật truyền thống (khóa cơ, mật mã, thẻ từ).
+        \item Xu hướng ứng dụng sinh trắc học và Edge AI vào hệ thống nhúng.
+    \end{itemize}
+
+    \section{Mục tiêu của đề tài}
+    \begin{itemize}
+        \item \textbf{Mục tiêu tổng quát:} Xây dựng hệ thống khóa thông minh nhận diện khuôn mặt hoạt động ổn định trên phần cứng chi phí thấp.
+        \item \textbf{Mục tiêu cụ thể:} Thiết kế phần cứng (ESP32-S3 Cam), triển khai mô hình nhận diện gọn nhẹ, xây dựng ứng dụng quản lý (Mobile/Web), tối ưu hóa hiệu năng.
+    \end{itemize}
+
+    \section{Đối tượng và phạm vi nghiên cứu}
+    \begin{itemize}
+        \item \textbf{Đối tượng:} Board ESP32-S3 Cam, TinyML, cơ chế điều khiển khóa.
+        \item \textbf{Phạm vi:} Nhận diện trong môi trường thực tế (30-80cm, ánh sáng văn phòng/gia đình), quản lý người dùng cục bộ hoặc Server mini.
+    \end{itemize}
+
+    \section{Ý nghĩa khoa học và thực tiễn}
+    \begin{itemize}
+        \item \textbf{Khoa học:} Thử nghiệm khả năng tính toán của ESP32-S3 với các tác vụ thị giác máy tính.
+        \item \textbf{Thực tiễn:} Giải pháp khóa cửa thông minh chi phí tối ưu cho phòng trọ, văn phòng nhỏ.
+    \end{itemize}
+
+    \section{Cấu trúc của báo cáo}
+
+    \chapter{CƠ SỞ LÝ THUYẾT VÀ CÔNG NGHỆ SỬ DỤNG}
+    \section{Cơ sở lý thuyết về thị giác máy tính và Nhận diện khuôn mặt}
+    \subsection{Bài toán phát hiện khuôn mặt (Face Detection)}
+    \subsection{Bài toán trích xuất đặc trưng và nhận diện (Face Recognition)}
+    \subsection{Tổng quan về TinyML}
+
+    \section{Công nghệ phần cứng sử dụng}
+    \subsection{ESP32-S3 CAM}
+    \subsection{Các linh kiện ngoại vi (Relay, Buck converter, cơ cấu khóa)}
+
+    \section{Công nghệ phần mềm và Thư viện}
+    \subsection{ESP-IDF / Arduino IDE}
+    \subsection{ESP-WHO / ESP-DL}
+    \subsection{Nền tảng quản lý (Flutter, NestJS/Prisma)}
+
+    \chapter{PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG}
+    \section{Phân tích yêu cầu hệ thống}
+    \subsection{Yêu cầu chức năng}
+    \subsection{Yêu cầu phi chức năng}
+
+    \section{Sơ đồ kiến trúc hệ thống}
+    \section{Các biểu đồ UML}
+    \subsection{Biểu đồ Use Case}
+    \subsection{Biểu đồ Hoạt động (Activity Diagram)}
+    \subsection{Biểu đồ Trình tự (Sequence Diagram)}
+
+    \section{Thiết kế cơ sở dữ liệu}
+    \subsection{Lưu trữ trên Flash (Cục bộ ESP32)}
+    \subsection{Lưu trữ trên Server (ERD)}
+
+    \chapter{TRIỂN KHAI THỬ NGHIỆM VÀ ĐÁNH GIÁ}
+    \section{Cấu hình môi trường và triển khai}
+    \section{Kịch bản kiểm thử (Testcases)}
+    \section{Kết quả triển khai và Phân tích đánh giá}
+    \subsection{Kết quả đạt được}
+    \subsection{Bảng thống kê hiệu năng (FAR, FRR, Tốc độ xử lý)}
+    \subsection{Phân tích hạn chế}
+
+    \chapter{KẾT LUẬN}
+    \section{Các đóng góp chính của đề tài}
+    \section{Hướng phát triển trong tương lai}
+
+    \chapter*{TÀI LIỆU THAM KHẢO}
+
+\end{document}
