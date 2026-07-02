@@ -1,0 +1,32 @@
+\begin{table}[H]
+    \centering
+    \caption{Kịch bản kiểm thử nhóm chức năng Nhận diện và Mở khóa}
+    \label{tab:tc_unlock}
+    \small
+    \begin{tabularx}{\textwidth}{|c|X|X|X|}
+\hline
+\textbf{Mã TC} & \textbf{Tên kịch bản} & \textbf{Các bước thực hiện} & \textbf{Kết quả mong đợi} \\
+\hline
+\textbf{TC\_UNLOCK\_01} & Nhận diện đúng người dùng đã đăng ký &
+1. Khóa đang ở trạng thái Đóng.\newline
+2. Người dùng hợp lệ (đã đăng ký ở TC\_ENROLL\_01) đứng trước camera.\newline
+3. Chờ hệ thống xử lý frame ảnh. &
+Hệ thống tính toán độ tương đồng >= Threshold. Đèn LED xanh sáng. Gửi log "Mở cửa thành công" lên MQTT Server. \\
+\hline
+\textbf{TC\_UNLOCK\_02} & Tự động khóa lại &
+1. Thực hiện thành công TC\_UNLOCK\_01.\newline
+2. Giữ nguyên trạng thái và đợi quá thời gian cấu hình (VD: 5 giây). & Đèn LED xanh tắt. \\
+\hline
+\textbf{TC\_UNLOCK\_03} & Nhận diện người lạ  &
+1. Khóa đang ở trạng thái Đóng.\newline
+2. Một người chưa từng đăng ký khuôn mặt tiến lại gần camera. &
+Hệ thống detect được mặt nhưng độ tương đồng < Threshold. Cửa vẫn Đóng. Đèn LED đỏ sáng. Gửi log "Truy cập trái phép" lên MQTT Server. \\
+\hline
+\textbf{TC\_UNLOCK\_04} & Mở khóa từ xa qua App &
+1. Khóa đang ở trạng thái Đóng.\newline
+2. Admin nhấn nút "Mở cửa" trên Flutter App.\newline
+3. Server đẩy lệnh qua MQTT xuống ESP32. &
+ESP32-S3 nhận được lệnh hợp lệ, bỏ qua bước check khuôn mặt. Ngay lập tức bật LED xanh và phản hồi trạng thái về Server. \\
+\hline
+    \end{tabularx}
+\end{table}

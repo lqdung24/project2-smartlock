@@ -1,0 +1,44 @@
+\begin{table}[H]
+    \centering
+    \caption{Sơ đồ kết nối chi tiết hệ thống chân phần cứng tầng biên}
+    \label{tab:pin_mapping_final}
+    \small
+    \renewcommand{\arraystretch}{1.4} % Giãn dòng một chút cho thoáng và đẹp
+    \setlength{\tabcolsep}{5pt}      % Thu hẹp khoảng cách đệm giữa các cột để tiết kiệm bề ngang
+
+    % GIẢI PHÁP: Định nghĩa cột Y dựa trên X để tự động căn trái và xuống dòng cho các cột nhiều chữ
+    \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+    % Cấu hình lại hệ thống cột: các cột chứa nội dung dài sẽ dùng kiểu X hoặc Y
+    \begin{tabularx}{\textwidth}{c p{2.8cm} l l Y}
+\toprule
+\textbf{STT} & \textbf{Khối chức năng} & \textbf{Tên chân} & \textbf{Chân ESP32-S3} & \textbf{Chức năng \& Cách đi dây} \\
+\midrule
+
+% Cảm biến chạm
+1 & \textbf{\makecell[l]{Cảm biến chạm\\TTP223}} &
+\makecell[l]{VCC \\ GND \\ SIG} &
+\makecell[l]{3V3 \\ GND \\ \textbf{GPIO 14}} &
+\textbf{Đi dây rời.} Chân GPIO 14 cấu hình \texttt{INPUT} để đọc mức logic kích hoạt từ cảm biến. \\
+\midrule
+
+% Đèn LED
+2 & \textbf{\makecell[l]{Đèn LED}} &
+\makecell[l]{Anode (+) \\ Cathode (-)} &
+\makecell[l]{\textbf{GPIO 48} \\ GND} &
+\textbf{Đi dây rời.} Điều khiển trạng thái bằng tín hiệu \texttt{OUTPUT} / \texttt{PWM}. \textbf{Bắt buộc} nối tiếp qua một điện trở hạn dòng $220\,\Omega$. \\
+\midrule
+
+% Cụm Camera (Đã sửa lỗi lệch cột và xóa bỏ multirow gây vỡ dòng)
+3 & \textbf{Cụm Camera (OV2640)} & SIOD / SIOC & GPIO 4 / 5 & Giao tiếp SCCB (I2C) để điều khiển cấu hình. \\
+\cmidrule{3-5}
+& & VSYNC / HREF & GPIO 6 / 7 & Xung đồng bộ khung hình và đồng bộ dòng. \\
+\cmidrule{3-5}
+& & XCLK / PCLK & GPIO 15 / 13 & Xung clock hệ thống vào và xung nhịp điểm ảnh. \\
+\cmidrule{3-5}
+& & Y2 $\rightarrow$ Y9 & \makecell[l]{GPIO 11, 9, 8, 10,\\12, 18, 17, 16} & Bus dữ liệu hình ảnh song song (8-bit DVP). \\
+\cmidrule{3-5}
+& & \makecell[l]{Mạch nguồn /\\Mass} & \makecell[l]{3V3, GND, Ngầm\\(1.2V / 2.8V)} & Nguồn nuôi các mạch nội bộ và hệ thống mass chống nhiễu. \\
+\bottomrule
+    \end{tabularx}
+\end{table}

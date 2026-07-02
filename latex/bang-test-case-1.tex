@@ -1,0 +1,23 @@
+\begin{table}[H]
+    \centering
+    \caption{Kịch bản kiểm thử nhóm chức năng Kết nối BLE và Cấu hình thiết bị}
+    \label{tab:tc_ble}
+    \small
+    \begin{tabularx}{\textwidth}{|c|X|X|X|}
+\hline
+\textbf{Mã TC} & \textbf{Tên kịch bản} & \textbf{Các bước thực hiện} & \textbf{Kết quả mong đợi} \\
+\hline
+\textbf{TC\_BLE\_01} & Quét và kết nối BLE thành công &
+1. Cấp nguồn cho ESP32-S3.\newline
+2. Mở App trên điện thoại, bật Bluetooth và quét thiết bị.\newline
+3. Chọn thiết bị có tên "SmartLock\_BLE" để kết nối. &
+App thông báo kết nối thành công. ESP32-S3 dừng chớp đèn chờ và chuyển sang trạng thái đã kết nối BLE. \\
+\hline
+\textbf{TC\_BLE\_02} & Cấu hình Wi-Fi và MQTT hợp lệ &
+1. Đảm bảo BLE đang kết nối.\newline
+2. Nhập SSID, Password Wi-Fi và thông tin MQTT Broker trên App.\newline
+3. Nhấn "Lưu cấu hình". &
+ESP32-S3 nhận dữ liệu, lưu vào phân vùng NVS. Thiết bị tự động ngắt BLE, kết nối Wi-Fi thành công và báo trạng thái "Online" lên Cloud. \\
+\hline
+    \end{tabularx}
+\end{table}
