@@ -13,11 +13,11 @@ import 'views/join_requests_screen.dart';
 import 'views/add_device_intro_screen.dart';
 import 'views/scan_devices_screen.dart';
 import 'views/change_password_screen.dart';
+import 'views/faces_screen.dart';
 
 // Các màn hình nội dung của các tab
 import 'views/devices_screen.dart'; 
 import 'views/activity_screen.dart';
-import 'views/members_screen.dart';
 import 'views/settings_screen.dart';
 
 // 1. Tạo một GlobalKey cho Navigator gốc
@@ -110,7 +110,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(path: '/activity', builder: (context, state) => const ActivityScreenContent()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/members', builder: (context, state) => const MembersScreen()),
+            GoRoute(path: '/faces', builder: (context, state) => const FacesScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/settings', builder: (context, state) => const SettingsScreenContent()),

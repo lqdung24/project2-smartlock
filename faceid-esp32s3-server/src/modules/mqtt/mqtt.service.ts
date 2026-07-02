@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as mqtt from 'mqtt';
 import { MqttClient } from 'mqtt';
@@ -6,6 +6,7 @@ import { MqttClient } from 'mqtt';
 @Injectable()
 export class MqttService implements OnModuleInit, OnModuleDestroy {
   private client: MqttClient;
+  private readonly logger = new Logger(MqttService.name);
 
   constructor(private configService: ConfigService) {}
 
@@ -23,23 +24,21 @@ export class MqttService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('connect', () => {
-      console.log('MQTT client connected successfully');
-      // Ví dụ: subscribe vào một topic chung khi kết nối thành công
+      this.logger.log('MQTT client connected successfully');
       this.client.subscribe('server/+/control', (err) => {
         if (!err) {
-          console.log('Subscribed to server/+/control');
+          this.logger.log('Subscribed to server/+/control');
         }
       });
     });
 
     this.client.on('message', (topic, message) => {
-      // Xử lý các message nhận được ở đây
-      console.log(`Received message from topic: ${topic}`);
-      console.log(`Message: ${message.toString()}`);
+      this.logger.log(`Received message from topic: ${topic}`);
+      this.logger.log(`Message: ${message.toString()}`);
     });
 
     this.client.on('error', (error) => {
-      console.error('MQTT client error:', error);
+      this.logger.error('MQTT client error:', error);
     });
   }
 
@@ -51,7 +50,18 @@ export class MqttService implements OnModuleInit, OnModuleDestroy {
 
   publish(topic: string, message: string, options?: mqtt.IClientPublishOptions) {
     if (this.client) {
-      this.client.publish(topic, message, options);
+      // Default to QoS 1 to ensure messages are stored for offline clients
+      const publishOptions: mqtt.IClientPublishOptions = {
+        qos: 1,
+        ...options,
+      };
+      this.client.publish(topic, message, publishOptions, (error) => {
+        if (error) {
+          this.logger.error(`Failed to publish to ${topic}`, error);
+        } else {
+          this.logger.log(`Published to ${topic} with QoS ${publishOptions.qos}`);
+        }
+      });
     }
   }
 }

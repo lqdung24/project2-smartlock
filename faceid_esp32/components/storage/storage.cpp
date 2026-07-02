@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <esp_littlefs.h>
 #include <string.h>
+#include <unistd.h>
 
 static const char *TAG = "Storage";
 
@@ -109,9 +110,9 @@ void save_face_mapping(int face_id, int user_id) {
     }
 }
 
-int get_user_id_by_face_id(int face_id) {
-    if (face_id >= 0 && face_id < MAX_FACES) {
-        return user_face_map[face_id].user_id;
+int get_server_id_by_enroll_id(int enroll_id) {
+    if (enroll_id >= 0 && enroll_id < MAX_FACES) {
+        return user_face_map[enroll_id].user_id;
     }
     return -1;
 }
@@ -154,7 +155,7 @@ void init_littlefs() {
         ESP_LOGI("LittleFS", "File users.csv chưa có. Tiến hành tạo mới...");
         FILE* f = fopen("/face/users.csv", "w");
         if (f != NULL) {
-            fprintf(f, "id,name\n");
+            fprintf(f, "faceid,user_id,label\n");
             fclose(f);
             ESP_LOGI("LittleFS", "Khởi tạo file users.csv thành công!");
         }
@@ -176,6 +177,105 @@ void init_littlefs() {
 }
 
 
+
+void delete_face_mapping(int face_id) {
+    if (face_id >= 0 && face_id < MAX_FACES) {
+        user_face_map[face_id].user_id = -1;
+        save_face_mappings_to_flash();
+        ESP_LOGI(TAG, "Đã xóa ánh xạ cho face_id=%d", face_id);
+    } else {
+        ESP_LOGE(TAG, "Face ID %d vượt quá giới hạn mảng!", face_id);
+    }
+}
+
+void save_user_to_csv(int face_id, int user_id, const char* label) {
+    FILE* f = fopen("/face/users.csv", "a");
+    if (f != NULL) {
+        fprintf(f, "%d,%d,%s\n", face_id, user_id, label);
+        fclose(f);
+        ESP_LOGI("Storage", "Đã ghi record vào users.csv: faceid=%d, user_id=%d, label=%s", face_id, user_id, label);
+    } else {
+        ESP_LOGE("Storage", "Không thể mở file users.csv để ghi!");
+    }
+}
+
+bool lookup_user_by_face_id(int server_face_id, int &out_user_id, char *out_label, size_t label_max_len) {
+    FILE* f = fopen("/face/users.csv", "r");
+    if (f == NULL) {
+        return false;
+    }
+    
+    char line[128];
+    // Read header line
+    if (fgets(line, sizeof(line), f) == NULL) {
+        fclose(f);
+        return false;
+    }
+    
+    bool found = false;
+    while (fgets(line, sizeof(line), f) != NULL) {
+        int csv_face_id = -1;
+        int csv_user_id = -1;
+        char csv_label[64] = {0};
+        
+        int parsed = sscanf(line, "%d,%d,%63[^,\n\r]", &csv_face_id, &csv_user_id, csv_label);
+        if (parsed >= 2 && csv_face_id == server_face_id) {
+            out_user_id = csv_user_id;
+            if (parsed >= 3) {
+                strncpy(out_label, csv_label, label_max_len - 1);
+                out_label[label_max_len - 1] = '\0';
+            } else {
+                strncpy(out_label, "Unknown", label_max_len - 1);
+                out_label[label_max_len - 1] = '\0';
+            }
+            found = true;
+            break;
+        }
+    }
+    fclose(f);
+    return found;
+}
+
+void delete_user_from_csv(int server_face_id) {
+    FILE* f = fopen("/face/users.csv", "r");
+    if (f == NULL) return;
+    
+    FILE* temp = fopen("/face/users_temp.csv", "w");
+    if (temp == NULL) {
+        fclose(f);
+        return;
+    }
+    
+    char line[128];
+    // Copy header
+    if (fgets(line, sizeof(line), f) != NULL) {
+        fputs(line, temp);
+    }
+    
+    while (fgets(line, sizeof(line), f) != NULL) {
+        int csv_face_id = -1;
+        if (sscanf(line, "%d,", &csv_face_id) == 1 && csv_face_id == server_face_id) {
+            continue; // skip deleted line
+        }
+        fputs(line, temp);
+    }
+    
+    fclose(f);
+    fclose(temp);
+    
+    unlink("/face/users.csv");
+    rename("/face/users_temp.csv", "/face/users.csv");
+    ESP_LOGI("Storage", "Đã xóa record khỏi users.csv cho faceid=%d", server_face_id);
+}
+
+int find_enrolled_id_by_server_face_id(int server_face_id) {
+    for (int i = 0; i < MAX_FACES; i++) {
+        if (user_face_map[i].user_id == server_face_id) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 void save_offline_log(int32_t user_id, uint32_t timestamp) {
     FILE* f = fopen("/face/offline_log.bin", "a");

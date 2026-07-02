@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RequestStatus, Role } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -31,58 +31,6 @@ export class UserService {
     return { message: 'Password changed successfully' };
   }
 
-  async acceptRequest(ownerId: number, requesterId: number) {
-    const owner = await this.prisma.user.findUnique({ where: { id: ownerId } });
-    if (!owner || owner.role !== Role.OWNER || !owner.houseId) {
-      throw new ForbiddenException('You are not an owner of a house.');
-    }
-
-    const request = await this.prisma.house_Request.findFirst({
-      where: {
-        requesterId,
-        ownerId,
-        status: RequestStatus.PENDING,
-      },
-    });
-
-    if (!request) {
-      throw new NotFoundException('Pending request not found.');
-    }
-
-    await this.prisma.user.update({
-      where: { id: requesterId },
-      data: { houseId: owner.houseId },
-    });
-
-    await this.prisma.house_Request.update({
-      where: { id: request.id },
-      data: { status: RequestStatus.APPROVED },
-    });
-
-    return { message: 'User request approved successfully.' };
-  }
-
-  async rejectRequest(ownerId: number, requesterId: number) {
-    const request = await this.prisma.house_Request.findFirst({
-      where: {
-        requesterId,
-        ownerId,
-        status: RequestStatus.PENDING,
-      },
-    });
-
-    if (!request) {
-      throw new NotFoundException('Pending request not found.');
-    }
-
-    await this.prisma.house_Request.update({
-      where: { id: request.id },
-      data: { status: RequestStatus.REJECTED },
-    });
-
-    return { message: 'User request rejected successfully.' };
-  }
-
   async removeMember(ownerId: number, memberId: number) {
     const owner = await this.prisma.user.findUnique({ where: { id: ownerId } });
     if (!owner || owner.role !== Role.OWNER || !owner.houseId) {
@@ -96,22 +44,8 @@ export class UserService {
 
     await this.prisma.user.update({
       where: { id: memberId },
-      data: { houseId: null },
+      data: { houseId: null, role: Role.OWNER }, // Reset role to OWNER as they are no longer part of a house
     });
-
-    const request = await this.prisma.house_Request.findFirst({
-      where: {
-        requesterId: memberId,
-        ownerId: ownerId,
-      },
-    });
-
-    if (request) {
-      await this.prisma.house_Request.update({
-        where: { id: request.id },
-        data: { status: RequestStatus.DELETED },
-      });
-    }
 
     return { message: 'Member removed successfully.' };
   }
@@ -126,24 +60,6 @@ export class UserService {
         email: true,
         name: true,
         role: true,
-      },
-    });
-  }
-
-  async getHouseRequests(ownerId: number) {
-    return this.prisma.house_Request.findMany({
-      where: {
-        ownerId: ownerId,
-        status: RequestStatus.PENDING,
-      },
-      include: {
-        requestUser: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-          },
-        },
       },
     });
   }

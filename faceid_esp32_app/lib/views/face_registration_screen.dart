@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/auth_provider.dart';
+import '../providers/face_provider.dart';
 import '../services/cloudinary_service.dart';
-import '../services/device_service.dart';
 
 class FaceRegistrationScreen extends ConsumerStatefulWidget {
   const FaceRegistrationScreen({super.key});
@@ -15,6 +15,7 @@ class FaceRegistrationScreen extends ConsumerStatefulWidget {
 }
 
 class _FaceRegistrationScreenState extends ConsumerState<FaceRegistrationScreen> {
+  final _labelController = TextEditingController();
   bool _isLoading = false;
 
   Future<void> _registerFace() async {
@@ -57,7 +58,6 @@ class _FaceRegistrationScreenState extends ConsumerState<FaceRegistrationScreen>
 
     try {
       final cloudinaryService = CloudinaryService();
-      final deviceService = DeviceService();
 
       // 1. Upload to Cloudinary
       final imageUrl = await cloudinaryService.uploadImage(image);
@@ -68,8 +68,8 @@ class _FaceRegistrationScreenState extends ConsumerState<FaceRegistrationScreen>
         throw Exception('Không tìm thấy thông tin người dùng.');
       }
 
-      // 3. Gửi URL lên server (DeviceService sẽ tự lấy hardwareId đang online)
-      await deviceService.registerFace(imageUrl);
+      // 3. Gửi URL lên server
+      await ref.read(faceNotifierProvider.notifier).registerFace(imageUrl, _labelController.text);
 
       if (mounted) {
          ScaffoldMessenger.of(context).showSnackBar(
@@ -113,6 +113,14 @@ class _FaceRegistrationScreenState extends ConsumerState<FaceRegistrationScreen>
                 'Đăng ký khuôn mặt của bạn để sử dụng tính năng mở khóa bằng FaceID.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _labelController,
+                decoration: const InputDecoration(
+                  labelText: 'Nhãn',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 32),
               if (_isLoading)

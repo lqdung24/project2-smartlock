@@ -13,6 +13,20 @@ class HomeScreenContent extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
+    ref.listen<AsyncValue<void>>(deviceNotifierProvider, (_, state) {
+      if (state.hasError && !state.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: ${state.error}')),
+        );
+      }
+      if (!state.hasError && !state.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thao tác thành công!'), backgroundColor: Colors.green),
+        );
+        ref.refresh(devicesProvider);
+      }
+    });
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56.0),
@@ -218,9 +232,24 @@ class _DeviceCard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.more_vert, color: onSurfaceVariant),
-                    onPressed: () {},
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        ref.read(deviceNotifierProvider.notifier).deleteDevice(hardwareId);
+                      } else if (value == 'reset') {
+                        ref.read(deviceNotifierProvider.notifier).resetDevice(hardwareId);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'reset',
+                        child: Text('Reset'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Text('Xóa', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
                   ),
                 ],
               ),

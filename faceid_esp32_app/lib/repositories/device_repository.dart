@@ -22,4 +22,12 @@ class DeviceRepository {
   Future<void> openDevice(String hardwareId) {
     return _deviceService.openDevice(hardwareId);
   }
+
+  Future<bool> deleteDevice(String hardwareId) {
+    return _deviceService.deleteDevice(hardwareId);
+  }
+
+  Future<bool> resetDevice(String hardwareId) {
+    return _deviceService.resetDevice(hardwareId);
+  }
 }

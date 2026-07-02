@@ -20,3 +20,38 @@ final deviceLogProvider = FutureProvider.autoDispose<List<DeviceLog>>((ref) {
   final repository = ref.watch(deviceRepositoryProvider);
   return repository.getDeviceLogs();
 });
+
+class DeviceNotifier extends AutoDisposeNotifier<AsyncValue<void>> {
+  @override
+  AsyncValue<void> build() {
+    return const AsyncData(null);
+  }
+
+  Future<void> deleteDevice(String hardwareId) async {
+    state = const AsyncLoading();
+    final repository = ref.read(deviceRepositoryProvider);
+    final success = await repository.deleteDevice(hardwareId);
+    if (success) {
+      ref.invalidate(devicesProvider);
+      state = const AsyncData(null);
+    } else {
+      state = AsyncError('Failed to delete device', StackTrace.current);
+    }
+  }
+
+  Future<void> resetDevice(String hardwareId) async {
+    state = const AsyncLoading();
+    final repository = ref.read(deviceRepositoryProvider);
+    final success = await repository.resetDevice(hardwareId);
+    if (success) {
+      ref.invalidate(devicesProvider);
+      state = const AsyncData(null);
+    } else {
+      state = AsyncError('Failed to reset device', StackTrace.current);
+    }
+  }
+}
+
+final deviceNotifierProvider = NotifierProvider.autoDispose<DeviceNotifier, AsyncValue<void>>(
+  DeviceNotifier.new,
+);

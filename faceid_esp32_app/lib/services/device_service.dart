@@ -71,6 +71,24 @@ class DeviceService {
     }
   }
 
+  Future<bool> deleteDevice(String hardwareId) async {
+    try {
+      final response = await _dio.delete('/device/$hardwareId');
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> resetDevice(String hardwareId) async {
+    try {
+      final response = await _dio.post('/device/$hardwareId/reset');
+      return response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Lấy danh sách thiết bị đang online (tạm thời fix cứng)
   Future<String> getOnlineDevice() async {
     // TODO: Cập nhật logic gọi API thực tế để lấy hardwareId của thiết bị online
@@ -83,7 +101,7 @@ class DeviceService {
       final hardwareId = await getOnlineDevice();
       
       await _dio.post(
-        '/device/regisface',
+        '/face/regis', // Changed from '/device/regisface' to '/face/regis'
         data: {
           'hardwareId': hardwareId,
           'imageUrl': imageUrl,

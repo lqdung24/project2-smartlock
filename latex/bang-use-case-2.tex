@@ -1,15 +1,27 @@
-%! Author = lqdung
-%! Date = 7/1/26
 
-% Preamble
-\documentclass[11pt]{article}
-
-% Packages
-\usepackage{amsmath}
-
-% Document
-\begin{document}
-
-
-
-\end{document}
+\begin{table}[htbp]
+    \centering
+    \caption{Bảng đặc tả Use Case Nhận diện khuôn mặt mở cửa tại biên}
+    \label{tab:spec_uc_recognition}
+    \begin{tabular}{|p{3.5cm}|p{9.5cm}|}
+        \hline
+        \textbf{Trường thông tin} & \textbf{Nội dung đặc tả chi tiết} \\ \hline
+        \textbf{Tên Use Case} & Nhận diện khuôn mặt mở cửa vật lý tại biên (Edge-AI Pipeline) \\ \hline
+        \textbf{Mã hiệu} & UC-02 \\ \hline
+        \textbf{Tác nhân (Actors)} & Người dùng (Thành viên / Chủ hộ) \\ \hline
+        \textbf{Mô tả ngắn} & Người dùng đến trước camera, vi điều khiển tự chạy pipeline TinyML để quét mặt, tính khoảng cách toán học để ra quyết định mở cửa. \\ \hline
+        \textbf{Tiền điều kiện} & Thiết bị ESP32-S3 Cam hoạt động bình thường, phần cứng đã được cấp nguồn ổn định. \\ \hline
+        \textbf{Hậu điều kiện} & Cửa được mở nếu thông tin hợp lệ; hệ thống ghi nhận log sự kiện. \\ \hline
+        \textbf{Luồng sự kiện chính} &
+        1. Người dùng đến trước camera.\newline
+        2. ESP32-S3 bắt frame ảnh thời gian thực.\newline
+        3. Mạng MTMN thực hiện phát hiện khuôn mặt và xác định 5 điểm mốc (Landmarks).\newline
+        4. Hệ thống thực hiện phép biến đổi Affine để căn chỉnh (Align) khuôn mặt thẳng góc.\newline
+        5. Mạng MobileFaceNet nạp ảnh đã căn chỉnh và tính toán ra vector nhúng đặc trưng.\newline
+        6. Hệ thống thực hiện so khớp toán học, tính độ tương đồng cos ($d$) giữa vector vừa trích xuất với các mẫu lưu trong bộ nhớ Flash.\newline
+        7. Hệ thống đối chiếu thấy $d \ge \theta$ (Ngưỡng Threshold).\newline
+        8. Kích hoạt khối xử lý song song: (1) Chuyển LED chỉ thị sang Xanh Lá; (2) Gửi gói tin log sự kiện lên MQTT Broker. \\ \hline
+        \textbf{Luồng rẽ nhánh} &
+        - \textit{Rẽ nhánh 7a (Xác thực thất bại - Người lạ):} Nếu $d > \theta$, bật LED chỉ thị màu Đỏ, gửi tín hiệu cảnh báo xâm nhập về Server. \\ \hline
+    \end{tabular}
+\end{table}

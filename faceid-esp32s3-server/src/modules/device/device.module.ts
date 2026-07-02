@@ -5,9 +5,10 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { DeviceOwnerGuard } from './guards/device-owner.guard';
+import { EventsModule } from '../events/events.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, ConfigModule],
+  imports: [PrismaModule, AuthModule, ConfigModule, EventsModule],
   providers: [DeviceService, DeviceOwnerGuard],
   controllers: [DeviceController],
   exports: [DeviceService],

@@ -36,6 +36,7 @@ void config_init_defaults_hust(app_config_t *config)
 
     strncpy(config->device_name, "esp32s3_smartlock", sizeof(config->device_name) - 1);
     config->device_name[sizeof(config->device_name) - 1] = '\0';
+
 }
 
 void config_init_defaults(app_config_t *config)
@@ -45,19 +46,19 @@ void config_init_defaults(app_config_t *config)
 
     config->configured = 1;
 
-    strncpy(config->wifi_ssid, "B13-405", sizeof(config->wifi_ssid) - 1);
+    strncpy(config->wifi_ssid, "panda", sizeof(config->wifi_ssid) - 1);
     config->wifi_ssid[sizeof(config->wifi_ssid) - 1] = '\0';
 
-    strncpy(config->wifi_pass, "12346789", sizeof(config->wifi_pass) - 1);
+    strncpy(config->wifi_pass, "mybirthday", sizeof(config->wifi_pass) - 1);
     config->wifi_pass[sizeof(config->wifi_pass) - 1] = '\0';
 
-    strncpy(config->mqtt_host, "192.168.1.15", sizeof(config->mqtt_host) - 1);
+    strncpy(config->mqtt_host, "172.20.10.4", sizeof(config->mqtt_host) - 1);
     config->mqtt_host[sizeof(config->mqtt_host) - 1] = '\0';
 
     strncpy(config->mqtt_token, "0723635463ba45b139ba9ca4dac002cbc9473d66381719b530edf63cb322522a720171e2bae44fcc9703ce769e32ec9839f6cbf19193be6f7e215af25f4e2b5f", sizeof(config->mqtt_token) - 1);
     config->mqtt_token[sizeof(config->mqtt_token) - 1] = '\0';
 
-    strncpy(config->server_host, "192.168.1.15", sizeof(config->server_host) - 1);
+    strncpy(config->server_host, "172.20.10.4", sizeof(config->server_host) - 1);
     config->server_host[sizeof(config->server_host) - 1] = '\0';
 
     config->server_port = 3030;

@@ -1,66 +1,28 @@
 \chapter{KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN}
 
-Sau một thời gian nghiên cứu, tìm hiểu cơ sở lý thuyết và tiến hành thiết kế, thi công thực nghiệm, đề tài \textbf{"Nghiên cứu và thiết kế hệ thống khóa cửa thông minh (Smart Lock) ứng dụng trí tuệ nhân tạo trên vi điều khiển ESP32-S3"} đã hoàn thành các mục tiêu ban đầu đặt ra. Hệ thống không chỉ dừng lại ở mức độ mô phỏng mà đã được hiện thực hóa thành một sản phẩm phần cứng hoàn chỉnh, hoạt động ổn định và có khả năng ứng dụng trực tiếp vào đời sống.
+Sau một thời gian nghiên cứu, tìm hiểu cơ sở lý thuyết và tiến hành thiết kế, thi công thực nghiệm, đề tài \textbf{"Nghiên cứu và thiết kế hệ thống khóa cửa thông minh ứng dụng trí tuệ nhân tạo trên vi điều khiển ESP32-S3"} đã hoàn thành các mục tiêu ban đầu đặt ra. Hệ thống không chỉ dừng lại ở mức độ mô phỏng mà đã được hiện thực hóa thành một sản phẩm phần cứng hoàn chỉnh, hoạt động ổn định và có khả năng ứng dụng trực tiếp vào đời sống.
 
 \section{Các đóng góp chính của đề tài}
 
-Quá trình thực hiện đề tài đã mang lại những kết quả tích cực, đóng góp cả về mặt ý nghĩa khoa học lẫn giá trị thực tiễn. Những đóng góp cốt lõi của nghiên cứu có thể được tổng hợp qua ba khía cạnh sau:
+Quá trình thực hiện đề tài đã mang lại những kết quả tích cực, đóng góp cả về mặt ý nghĩa khoa học lẫn giá trị thực tiễn. Những đóng góp cốt lõi của nghiên cứu có thể được tổng hợp qua ba khía cạnh chính.
 
-\textbf{Thứ nhất, nghiên cứu và làm chủ thành công công nghệ AI nhúng (Edge AI) trên nền tảng vi điều khiển giới hạn tài nguyên (ESP32-S3).}
+\textbf{Thứ nhất, nghiên cứu và làm chủ thành công công nghệ AI nhúng trên nền tảng vi điều khiển giới hạn tài nguyên.} Trong bối cảnh các hệ thống nhận diện khuôn mặt thường đòi hỏi máy chủ ngoại vi hoặc các thiết bị xử lý đồ họa đắt tiền, đề tài đã chứng minh tính khả thi của việc chạy các mô hình học máy trực tiếp trên vi điều khiển. Nhóm nghiên cứu đã giải quyết bài toán tối ưu hóa tài nguyên bộ nhớ và toán học cho các mạng nơ-ron tích chập để trích xuất đặc trưng khuôn mặt ngay tại biên. Bằng cách khai thác tối đa sức mạnh của tập lệnh mở rộng phục vụ AI trên chip ESP32-S3, hệ thống đã đạt được tốc độ nhận diện ấn tượng mà vẫn duy trì tỷ lệ chính xác cao. Điều này không chỉ giảm thiểu độ trễ so với các hệ thống AI trên Cloud mà còn đảm bảo tuyệt đối tính riêng tư cho dữ liệu sinh trắc học của người dùng, do hình ảnh không bị truyền ra ngoài Internet.
 
-Trong bối cảnh các hệ thống nhận diện khuôn mặt thường đòi hỏi máy chủ ngoại vi hoặc các thiết bị xử lý đồ họa (GPU) đắt tiền, đề tài đã chứng minh tính khả thi của việc chạy các mô hình học máy (Machine Learning) trực tiếp trên vi điều khiển (MCU).
-\begin{itemize}
-    \item Nhóm nghiên cứu đã giải quyết bài toán tối ưu hóa tài nguyên bộ nhớ (RAM/Flash) và tối ưu hóa toán học cho các mạng nơ-ron tích chập (CNN) để trích xuất đặc trưng khuôn mặt (Face Embedding) ngay tại biên (Edge).
-    \item Đề tài đã khai thác tối đa sức mạnh của tập lệnh mở rộng phục vụ AI trên chip ESP32-S3, giúp hệ thống đạt được tốc độ nhận diện ấn tượng (dưới 2 giây cho mỗi lượt quét) mà vẫn duy trì tỷ lệ chính xác (Accuracy) cao. Điều này không chỉ giảm thiểu độ trễ so với các hệ thống AI trên Cloud mà còn đảm bảo tuyệt đối tính riêng tư cho dữ liệu sinh trắc học của người dùng, do hình ảnh không bị truyền ra ngoài Internet.
-\end{itemize}
+\textbf{Thứ hai, hoàn thiện thiết kế và chế tạo một sản phẩm phần cứng "Smart Lock" có tính ứng dụng cao, hoạt động bền bỉ với chi phí tối ưu.} Vượt qua ranh giới của một mô hình thử nghiệm trên breadboard, đề tài đã tiến hành thiết kế mạch in và tích hợp các khối chức năng quan trọng như thu thập hình ảnh, xử lý trung tâm, điều khiển chấp hành, và quản lý nguồn điện. Sản phẩm cuối cùng được đóng gói thành một thiết bị phần cứng nhỏ gọn, có tính thẩm mỹ và dễ dàng lắp đặt vào các hệ thống cửa thực tế. So với các giải pháp thương mại đắt đỏ, mô hình của đề tài mang lại một giải pháp thay thế với chi phí vật tư thấp hơn rất nhiều, nhưng vẫn đảm bảo độ tin cậy và độ bền bỉ trong môi trường hoạt động thực tế.
 
-\textbf{Thứ hai, hoàn thiện thiết kế và chế tạo một sản phẩm phần cứng "Smart Lock" có tính ứng dụng cao, hoạt động bền bỉ với chi phí tối ưu.}
-
-Vượt qua ranh giới của một mô hình thử nghiệm (prototype) trên breadboard, đề tài đã tiến hành thiết kế mạch in (PCB), tích hợp các khối chức năng quan trọng như: khối thu thập hình ảnh (Camera module), khối xử lý trung tâm (ESP32-S3), khối điều khiển chấp hành (Relay và khóa cơ khí), và khối quản lý nguồn điện.
-\begin{itemize}
-    \item Sản phẩm được đóng gói thành một thiết bị phần cứng nhỏ gọn, có tính thẩm mỹ và dễ dàng lắp đặt vào các hệ thống cửa thực tế tại hộ gia đình hoặc văn phòng.
-    \item So với các giải pháp khóa cửa nhận diện khuôn mặt thương mại đang có trên thị trường với giá thành đắt đỏ, mô hình của đề tài mang lại một giải pháp thay thế với chi phí vật tư (BOM - Bill of Materials) thấp hơn rất nhiều, nhưng vẫn đảm bảo được độ tin cậy, khả năng chống nhiễu và độ bền bỉ trong môi trường hoạt động thực tế.
-\end{itemize}
-
-\textbf{Thứ ba, xây dựng trọn vẹn luồng sinh thái kết nối đồng bộ giữa thiết bị phần cứng, máy chủ và ứng dụng quản lý trên thiết bị di động (Mobile App).}
-
-Một thiết bị IoT không thể gọi là thông minh nếu thiếu đi khả năng giao tiếp và quản lý từ xa. Đề tài đã hoàn thiện một kiến trúc hệ thống toàn diện (End-to-End System).
-\begin{itemize}
-    \item Hệ thống cho phép quản trị viên (Admin) dễ dàng thực hiện các thao tác: đăng ký khuôn mặt người dùng mới (Enrollment), xóa bỏ quyền truy cập, và giám sát trạng thái khóa cửa theo thời gian thực.
-    \item Cơ sở dữ liệu được thiết kế tối ưu để lưu trữ log lịch sử ra vào, kết hợp với tính năng gửi thông báo (Push Notification) cảnh báo xâm nhập ngay lập tức đến điện thoại người quản lý khi phát hiện có khuôn mặt sai lệch cố tình mở khóa nhiều lần. Quá trình giao tiếp giữa ESP32-S3, Server và App được bảo mật thông qua các giao thức truyền tải an toàn, đảm bảo tính toàn vẹn của dữ liệu trong hệ thống mạng.
-\end{itemize}
+\textbf{Thứ ba, xây dựng trọn vẹn luồng sinh thái kết nối đồng bộ giữa thiết bị phần cứng, máy chủ và ứng dụng quản lý trên thiết bị di động.} Một thiết bị IoT không thể gọi là thông minh nếu thiếu đi khả năng giao tiếp và quản lý từ xa. Đề tài đã hoàn thiện một kiến trúc hệ thống toàn diện, cho phép quản trị viên dễ dàng thực hiện các thao tác như đăng ký khuôn mặt người dùng mới, xóa bỏ quyền truy cập, và giám sát trạng thái khóa cửa theo thời gian thực. Cơ sở dữ liệu được thiết kế để lưu trữ log lịch sử ra vào và gửi cảnh báo xâm nhập ngay lập tức khi phát hiện các nỗ lực mở khóa không hợp lệ. Toàn bộ quá trình giao tiếp giữa các thành phần hệ thống được bảo mật thông qua các giao thức truyền tải an toàn.
 
 \section{Hướng phát triển trong tương lai}
 
-Mặc dù đã đạt được những kết quả đáng khích lệ và đáp ứng được các yêu cầu thiết kế ban đầu, hệ thống vẫn còn những giới hạn nhất định do rào cản về thời gian nghiên cứu và giới hạn phần cứng hiện tại. Để biến đề tài từ một sản phẩm nghiên cứu khoa học thành một thiết bị có khả năng thương mại hóa rộng rãi (Mass Production), nhóm nghiên cứu đề xuất các hướng phát triển nâng cao trong tương lai như sau:
+Mặc dù đã đạt được những kết quả đáng khích lệ, hệ thống vẫn còn những giới hạn nhất định. Để biến đề tài thành một sản phẩm thương mại hóa, nhóm nghiên cứu đề xuất các hướng phát triển nâng cao trong tương lai.
 
-\textbf{Nâng cấp tính năng bảo mật với công nghệ chống giả mạo khuôn mặt (Anti-Spoofing / Liveness Detection).}
+\textbf{Nâng cấp tính năng bảo mật với công nghệ chống giả mạo khuôn mặt.} Hệ thống hiện tại dựa trên hình ảnh 2D, do đó vẫn tồn tại rủi ro bị qua mặt bởi các hình thức tấn công giả mạo. Về mặt phần mềm, có thể tích hợp thêm các thuật toán học sâu để phân tích kết cấu da hoặc nhận diện cử chỉ. Về mặt phần cứng, việc nâng cấp lên module camera kép hoặc sử dụng thêm cảm biến hồng ngoại và cảm biến chiều sâu sẽ cho phép hệ thống tái tạo bản đồ 3D của khuôn mặt, triệt tiêu hoàn toàn khả năng bị đánh lừa bởi hình ảnh 2D.
 
-Hiện tại, hệ thống dựa trên hình ảnh 2D RGB, do đó vẫn tồn tại rủi ro bị qua mặt bởi các hình thức tấn công giả mạo (Presentation Attacks) như sử dụng ảnh in giấy chất lượng cao, hình ảnh hoặc video phát lại trên màn hình điện thoại/tablet.
-\begin{itemize}
-    \item \textit{Về mặt phần mềm:} Tích hợp thêm các thuật toán học sâu chuyên biệt để phân tích kết cấu vi mô của da, nhận diện cử chỉ (chớp mắt, mỉm cười) hoặc phân tích sự phản xạ ánh sáng (Liveness Detection).
-    \item \textit{Về mặt phần cứng:} Nâng cấp module camera kép hoặc sử dụng thêm cảm biến hồng ngoại (IR Camera) và cảm biến chiều sâu (ToF - Time of Flight). Sự kết hợp này cho phép hệ thống tái tạo lại bản đồ 3D của khuôn mặt và phân tích bức xạ nhiệt, từ đó triệt tiêu hoàn toàn khả năng bị đánh lừa bởi hình ảnh 2D, nâng cấp hệ thống lên tiêu chuẩn bảo mật của các thiết bị smartphone cao cấp.
-\end{itemize}
+\textbf{Tối ưu hóa sâu sắc bài toán tiêu thụ năng lượng.} Khóa cửa thông minh thường được kỳ vọng hoạt động bằng pin độc lập trong thời gian dài. Hệ thống hiện tại cần được lập trình để tận dụng tối đa các chế độ ngủ sâu của chip ESP32-S3. Giải pháp đề xuất là tích hợp thêm cảm biến chuyển động hồng ngoại thụ động hoặc cảm biến tiệm cận, giúp hệ thống duy trì ở trạng thái ngủ sâu và chỉ thức giấc khi phát hiện có người tiến lại gần, từ đó tăng thời lượng pin lên gấp nhiều lần.
 
-\textbf{Tối ưu hóa sâu sắc bài toán tiêu thụ năng lượng (Power Management \& Energy Efficiency).}
+\textbf{Mở rộng khả năng tương tác và hội nhập vào hệ sinh thái Nhà thông minh.} Xu thế của IoT là sự liên kết giữa các thiết bị. Đề tài hướng tới việc tích hợp các giao thức tiêu chuẩn như MQTT, Matter, hoặc Zigbee để thiết bị có thể "nói chuyện" với các Hub trung tâm như Home Assistant, Apple HomeKit, hoặc Google Home. Điều này sẽ cho phép người dùng mở cửa bằng giọng nói và tự động kích hoạt các kịch bản nhà thông minh khác.
 
-Khóa cửa thông minh thường được kỳ vọng hoạt động bằng pin độc lập trong nhiều tháng để đảm bảo tính thẩm mỹ và hoạt động tốt ngay cả khi mất điện lưới.
-\begin{itemize}
-    \item Hệ thống hiện tại cần được lập trình để tận dụng tối đa các chế độ ngủ sâu (Deep Sleep) cực kỳ hiệu quả của dòng chip ESP32-S3, đồng thời tận dụng bộ đồng xử lý siêu tiết kiệm điện (ULP Co-processor).
-    \item Giải pháp đề xuất là tích hợp thêm cảm biến chuyển động hồng ngoại thụ động (PIR Sensor) hoặc cảm biến tiệm cận. Hệ thống (bao gồm cả Camera và MCU chính) sẽ duy trì ở trạng thái ngủ sâu, tiêu thụ dòng điện ở mức micro-Ampere ($\mu$A), và chỉ thực sự thức giấc (Wake-up) để quét khuôn mặt khi phát hiện có thân nhiệt người tiến lại gần vùng nhận diện. Điều này sẽ giúp tăng thời lượng pin của thiết bị lên gấp nhiều lần.
-\end{itemize}
-
-\textbf{Mở rộng khả năng tương tác và hội nhập vào hệ sinh thái Nhà thông minh (Smart Home Ecosystems).}
-
-Xu thế của IoT là sự liên kết và tính tương tác chéo giữa các thiết bị. Khóa cửa không nên hoạt động như một ốc đảo đơn lẻ mà cần trở thành một mắt xích trong các kịch bản tự động hóa (Automation).
-\begin{itemize}
-    \item Đề tài hướng tới việc tích hợp các giao thức tiêu chuẩn như MQTT chuyên sâu, Matter, hoặc Zigbee, cho phép thiết bị dễ dàng "nói chuyện" với các Hub trung tâm.
-    \item Cụ thể, phát triển các plugin/add-on để sản phẩm tương thích hoàn toàn với nền tảng mã nguồn mở Home Assistant (hass.io) nhằm cung cấp khả năng điều khiển nội bộ (Local Control) với độ trễ cực thấp. Đồng thời, nghiên cứu tích hợp chứng chỉ mDNS/Bonjour để hỗ trợ Apple HomeKit hoặc Google Home, cho phép người dùng mở cửa bằng giọng nói qua Siri/Google Assistant và tự động kích hoạt các kịch bản như: "Mở cửa thì tự động bật đèn phòng khách và mở rèm".
-\end{itemize}
-
-\textbf{Phát triển tính năng cập nhật phần mềm qua không gian mạng (OTA - Over-The-Air Update).}
-
-Để thuận tiện cho việc nâng cấp các thuật toán AI mới hoặc vá lỗi bảo mật trong quá trình vận hành mà không cần phải can thiệp vật lý vào mạch điện, tính năng OTA là yếu tố bắt buộc cần phát triển. Điều này sẽ giúp quản lý vòng đời sản phẩm (Product Lifecycle) dễ dàng hơn khi triển khai ở quy mô lớn cho các tòa nhà hoặc khách sạn.
+\textbf{Phát triển tính năng cập nhật phần mềm qua không gian mạng (OTA).} Để thuận tiện cho việc nâng cấp thuật toán AI hoặc vá lỗi bảo mật mà không cần can thiệp vật lý, tính năng OTA là yếu tố bắt buộc. Điều này sẽ giúp quản lý vòng đời sản phẩm dễ dàng hơn khi triển khai ở quy mô lớn.
 
 \vspace{1em}
-\noindent\textbf{Kết luận chung:} Đề tài đã hoàn thành xuất sắc sứ mệnh ban đầu là làm cầu nối giữa lý thuyết học máy và kỹ thuật vi điều khiển nhúng. Thành công của hệ thống nhận diện khuôn mặt trên ESP32-S3 minh chứng cho tiềm năng to lớn của Edge AI trong các ứng dụng IoT thực tế. Với những hướng phát triển đã vạch ra, hệ thống hoàn toàn có thể được nâng cấp thành một sản phẩm thương mại toàn diện, đóng góp vào sự phát triển của công nghệ nhà thông minh (Smarthome) mang thương hiệu và hàm lượng chất xám của kỹ sư Việt Nam.
+\noindent\textbf{Kết luận chung:} Đề tài đã hoàn thành xuất sắc sứ mệnh ban đầu là làm cầu nối giữa lý thuyết học máy và kỹ thuật vi điều khiển nhúng. Thành công của hệ thống nhận diện khuôn mặt trên ESP32-S3 minh chứng cho tiềm năng to lớn của Edge AI trong các ứng dụng IoT thực tế. Với những hướng phát triển đã vạch ra, hệ thống hoàn toàn có thể được nâng cấp thành một sản phẩm thương mại toàn diện, đóng góp vào sự phát triển của công nghệ nhà thông minh mang thương hiệu và hàm lượng chất xám của kỹ sư Việt Nam.

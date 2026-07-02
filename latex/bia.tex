@@ -1,15 +1,66 @@
-%! Author = lqdung
-%! Date = 7/2/26
+% --- BẮT ĐẦU TRANG BÌA NGOÀI ---
+\begin{titlepage}
+    \begin{tikzpicture}[remember picture, overlay]
+        % Vẽ khung viền bìa chuẩn Bách Khoa (khung kép)
+        \draw[line width = 3pt] ($(current page.north west) + (2.5cm,-2cm)$) rectangle ($(current page.south east) + (-1.5cm,2cm)$);
+        \draw[line width = 0.5pt] ($(current page.north west) + (2.6cm,-2.1cm)$) rectangle ($(current page.south east) + (-1.6cm,2.1cm)$);
+    \end{tikzpicture}
 
-% Preamble
-\documentclass[11pt]{article}
+    \begin{center}
+        \vspace*{1cm}
+        \textbf{\large ĐẠI HỌC BÁCH KHOA HÀ NỘI} \\[0.5cm]
+        \textbf{\large TRƯỜNG CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG} \\[1cm]
 
-% Packages
-\usepackage{amsmath}
+        % Chỗ này ông thay bằng logo HUST hoặc logo SOICT nhé
+        \includegraphics[width=0.45\textwidth]{images/lo go.png} \\[1.5cm]
+        % \vspace{2.5cm} % Xóa dòng này nếu bật lệnh chèn logo ở trên
 
-% Document
-\begin{document}
+        \textbf{\Large BÁO CÁO ĐỒ ÁN 2} \\[2cm]
 
+        {\Large \textbf{ĐỀ TÀI:}}\\[0.5cm]
+        {\LARGE \textbf{Xây dựng hệ thống nhận diện khuôn mặt cho nhà thông minh}}\\[3cm]
+    \end{center}
 
+    \begin{large}
+        \noindent\hspace{2.5cm} % Đẩy cả khối bảng lùi vào lề phải 2.5cm cho cân giữa trang
+        \begin{tabular}{l l}
+            \textbf{Sinh viên thực hiện:} & Lê Quang Dũng\\
+            \textbf{Mã số sinh viên:} & 20235301 \\[0.5cm]
+            \textbf{Giảng viên hướng dẫn:} & ThS. Lê Văn Đồng \\
+        \end{tabular}
+    \end{large}
 
-\end{document}
+    \vfill
+    \begin{center}
+        \textbf{\Large Hà Nội, 07/2026}
+    \end{center}
+\end{titlepage}
+% --- KẾT THÚC TRANG BÌA NGOÀI ---
+
+% --- BẮT ĐẦU TRANG TRẮNG GIỮA ---
+\newpage
+\thispagestyle{empty} % Tắt đánh số trang
+\mbox{} % Bắt buộc phải có cái này để lừa LaTeX in ra trang trắng
+\newpage
+% --- KẾT THÚC TRANG TRẮNG ---
+
+% --- BẮT ĐẦU TRANG CHỮ KÝ ---
+\begin{titlepage}
+    \thispagestyle{empty} % Không đánh số trang cho trang này
+
+    \vspace*{3cm} % Đẩy khối chữ ký tụt xuống dưới cho đỡ trống trải phần trên đỉnh
+
+    % KHU VỰC KÝ TÊN XÁC NHẬN CỦA SINH VIÊN VÀ GIẢNG VIÊN
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{c c}
+            \textbf{Chữ ký Giảng viên hướng dẫn} \hspace{1.5cm} & \hspace{1.5cm} \textbf{Chữ ký Sinh viên} \\
+            \textit{(Ký và ghi rõ họ tên)} & \textit{(Ký và ghi rõ họ tên)} \\
+            \\[2.5cm] % Khoảng trống 2.5cm để ông và thầy ký tay
+            ThS. Lê Văn Đồng & Lê Quang Dũng \\
+        \end{tabular}
+    \end{table}
+
+    % Đã xóa bỏ phần địa danh Hà Nội ở cuối trang theo yêu cầu
+\end{titlepage}
+% --- KẾT THÚC TRANG CHỮ KÝ ---

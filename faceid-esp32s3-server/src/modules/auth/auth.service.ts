@@ -33,7 +33,7 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    const { email, password, name, ownerEmail, houseName } = registerDto;
+    const { email, password, name, houseName } = registerDto;
 
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -44,8 +44,8 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const isRequesting = ownerEmail && ownerEmail !== 'none@none.com';
-    const role = isRequesting ? Role.MEMBER : Role.OWNER;
+    // By default, a new user is an OWNER. The concept of 'MEMBER' through requests is removed.
+    const role = Role.OWNER;
 
     let user = await this.prisma.user.create({
       data: {
@@ -57,23 +57,8 @@ export class AuthService {
       },
     });
 
-    if (isRequesting) {
-      const owner = await this.prisma.user.findUnique({
-        where: { email: ownerEmail },
-      });
-      if (!owner) {
-        throw new BadRequestException('Owner with this email does not exist');
-      }
-      if (owner.role !== Role.OWNER) {
-        throw new BadRequestException('The specified user is not an owner');
-      }
-      await this.prisma.house_Request.create({
-        data: {
-          requesterId: user.id,
-          ownerId: owner.id,
-        },
-      });
-    } else if (houseName && houseName !== 'none') {
+    // If a house name is provided, create a new house and assign the user as its owner.
+    if (houseName && houseName !== 'none') {
       const house = await this.prisma.house.create({
         data: {
           name: houseName,

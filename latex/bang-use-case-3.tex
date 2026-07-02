@@ -1,15 +1,28 @@
-%! Author = lqdung
-%! Date = 7/1/26
-
-% Preamble
-\documentclass[11pt]{article}
-
-% Packages
-\usepackage{amsmath}
-
-% Document
-\begin{document}
-
-
-
-\end{document}
+\begin{table}[htbp]
+    \centering
+    \caption{Bảng đặc tả Use Case Cấu hình thiết bị qua BLE}
+    \label{tab:spec_uc_ble}
+    \begin{tabular}{|p{3.5cm}|p{9.5cm}|}
+        \hline
+        \textbf{Trường thông tin} & \textbf{Nội dung đặc tả chi tiết} \\ \hline
+        \textbf{Tên Use Case} & Cấu hình tham số mạng và thiết bị qua kết nối BLE (Bluetooth Low Energy) \\ \hline
+        \textbf{Mã hiệu} & UC-03 \\ \hline
+        \textbf{Tác nhân (Actors)} & Quản trị viên (Admin) \\ \hline
+        \textbf{Mô tả ngắn} & Cấp phát thông tin mạng Wi-Fi (SSID/Password) và thiết lập các thông số phần cứng ban đầu (Mã định danh khóa, Ngưỡng Threshold $\theta$) cho ESP32-S3 thông qua kết nối Bluetooth tầm ngắn. \\ \hline
+        \textbf{Tiền điều kiện} & - Admin đang đứng trong phạm vi kết nối Bluetooth của thiết bị ($<10$ mét).\newline - Thiết bị ESP32-S3 đang ở chế độ Provisioning Mode (chờ cấu hình). \\ \hline
+        \textbf{Hậu điều kiện} & ESP32-S3 nhận và lưu thông tin cấu hình vào phân vùng bộ nhớ tĩnh NVS; thiết bị tự khởi động lại để thực hiện kết nối Wi-Fi. \\ \hline
+        \textbf{Luồng sự kiện chính} &
+        1. Admin bật Bluetooth trên điện thoại và kích hoạt tính năng "Tìm kiếm thiết bị" trên ứng dụng.\newline
+        2. Ứng dụng quét các bản tin quảng bá (Advertising) BLE và hiển thị tên thiết bị Khóa thông minh.\newline
+        3. Admin chọn thiết bị và thực hiện bắt tay kết nối (GATT Connection).\newline
+        4. Ứng dụng yêu cầu nhập mã PIN bảo mật để xác thực quyền quản trị.\newline
+        5. Sau khi xác thực thành công, Admin nhập thông tin Wi-Fi (SSID, Password) và tùy chỉnh ngưỡng Threshold $\theta$.\newline
+        6. Ứng dụng ghi dữ liệu dạng chuỗi byte vào các Đặc tính (Characteristics) tương ứng thuộc Dịch vụ Cấu hình (GATT Provisioning Service) của ESP32-S3.\newline
+        7. ESP32-S3 nhận dữ liệu qua hàm callback sự kiện `ESP_GATTS_WRITE_EVT`, tiến hành parse dữ liệu và lưu vào NVS Flash.\newline
+        8. ESP32-S3 gửi thông báo xác nhận đã ghi thành công (Write Acknowledgement) về ứng dụng.\newline
+        9. Thiết bị tự động ngắt kết nối BLE và khởi động lại (Reboot) để áp dụng cấu hình mới. \\ \hline
+        \textbf{Luồng ngoại lệ} &
+        - \textit{Ngoại lệ 4a (Sai mã PIN xác thực):} Hệ thống từ chối quyền ghi, ESP32 ngắt kết nối BLE ngay lập tức để bảo mật.\newline
+        - \textit{Ngoại lệ 6a (Mất kết nối giữa chừng):} Quá trình truyền chuỗi byte bị ngắt quãng, ESP32 hủy bỏ gói tin lỗi trong bộ đệm RAM, giữ nguyên cấu hình cũ trong NVS. \\ \hline
+    \end{tabular}
+\end{table}

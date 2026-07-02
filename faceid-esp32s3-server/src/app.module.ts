@@ -13,6 +13,9 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptors';
 import { MqttModule } from './modules/mqtt/mqtt.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { FaceModule } from './modules/face/face.module';
+import { EventsModule } from './modules/events/events.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     UserModule,
     DeviceModule,
     MqttModule,
+    FaceModule,
+    EventsModule,
+    CloudinaryModule,
   ],
   controllers: [AppController, MqttController],
   providers: [

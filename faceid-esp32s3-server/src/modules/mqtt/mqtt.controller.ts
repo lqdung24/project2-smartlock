@@ -4,7 +4,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RedisService } from '../redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MqttService } from './mqtt.service';
-import { Prisma, Source } from '@prisma/client';
+import { Prisma, Source, Status, Role } from '@prisma/client';
+import { EventsGateway } from '../events/events.gateway';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Controller()
 export class MqttController {
@@ -15,6 +17,8 @@ export class MqttController {
     private redisService: RedisService,
     private prisma: PrismaService,
     private mqttService: MqttService,
+    private eventsGateway: EventsGateway,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   @MessagePattern('esp32/+/status')
@@ -47,6 +51,9 @@ export class MqttController {
             error.stack,
           );
         }
+      } else if (payload && payload.status === 'pong') {
+        this.logger.log(`Received pong from device ${hardwareId}`);
+        this.eventEmitter.emit('device.pong', hardwareId);
       } else {
         this.logger.warn(
           `Received unexpected payload on ${topic}: ${rawPayload}`,
@@ -111,13 +118,19 @@ export class MqttController {
         );
         await this.handleOfflineLogs(data, hardwareId);
         break;
+      
+      case -4:
+        // Handle local enrollment event
+        this.logger.log(`Received local enrollment event from device ${hardwareId}`);
+        await this.handleLocalEnrollment(data, hardwareId);
+        break;
 
       default:
         // Handle face enrollment event (eventType is face_id)
         this.logger.log(
           `Handling as face enrollment/recognition event for face_id: ${eventType}`,
         );
-        await this.handleEnrollEvent(data);
+        await this.handleFaceEnrollmentResponse(data);
         break;
     }
   }
@@ -150,21 +163,44 @@ export class MqttController {
       return;
     }
 
-    const userId = data.readInt32LE(4);
+    const faceId = data.readInt32LE(4);
     const timestamp = data.readUInt32LE(8);
+    let validFaceId: number | null = null;
+
+    if (faceId !== -1) {
+      const face = await this.prisma.faceData.findUnique({
+        where: { id: faceId },
+      });
+      if (face) {
+        validFaceId = face.id;
+      } else {
+        this.logger.warn(
+          `Received unlock event with non-existent faceId: ${faceId}. Storing as null.`,
+        );
+      }
+    }
 
     try {
-      await this.prisma.deviceLog.create({
+      const newLog = await this.prisma.deviceLog.create({
         data: {
           deviceId: device.id,
-          userId: userId === -1 ? null : userId,
+          faceid: validFaceId,
           time: new Date(timestamp * 1000),
           source: Source.FACEID,
         },
+        include: {
+          face: {
+            include: {
+              user: true,
+            },
+          },
+          device: true,
+        },
       });
       this.logger.log(
-        `Successfully logged unlock event for device ${hardwareId}. UserID: ${userId}`,
+        `Successfully logged unlock event for device ${hardwareId}. FaceID: ${faceId}`,
       );
+      this.eventsGateway.sendToAll('unlock_event', newLog);
     } catch (error) {
       this.logger.error(
         `Failed to save unlock event for device ${hardwareId}`,
@@ -207,20 +243,40 @@ export class MqttController {
     const serverCurrentTime = Math.floor(Date.now() / 1000);
     const timeOffset = serverCurrentTime - espCurrentTime;
 
-    const logsToCreate: Prisma.DeviceLogCreateManyInput[] = [];
+    const logsData: { faceId: number; timestamp: number }[] = [];
     for (let i = 0; i < logCount; i++) {
       const offset = 12 + i * 8;
-      const userId = data.readInt32LE(offset);
-      const logTimestamp = data.readUInt32LE(offset + 4);
-      const actualTimestamp = logTimestamp + timeOffset;
-
-      logsToCreate.push({
-        deviceId: device.id,
-        userId: userId === -1 ? null : userId,
-        time: new Date(actualTimestamp * 1000),
-        source: Source.FACEID,
+      logsData.push({
+        faceId: data.readInt32LE(offset),
+        timestamp: data.readUInt32LE(offset + 4) + timeOffset,
       });
     }
+
+    const incomingFaceIds = logsData
+      .map((log) => log.faceId)
+      .filter((id) => id !== -1);
+
+    const existingFaces = await this.prisma.faceData.findMany({
+      where: {
+        id: { in: incomingFaceIds },
+      },
+      select: {
+        id: true,
+      },
+    });
+    const existingFaceIds = new Set(existingFaces.map((face) => face.id));
+
+    const logsToCreate: Prisma.DeviceLogCreateManyInput[] = logsData.map(
+      (log) => ({
+        deviceId: device.id,
+        faceid:
+          log.faceId !== -1 && existingFaceIds.has(log.faceId)
+            ? log.faceId
+            : null,
+        time: new Date(log.timestamp * 1000),
+        source: Source.FACEID,
+      }),
+    );
 
     if (logsToCreate.length > 0) {
       try {
@@ -241,88 +297,111 @@ export class MqttController {
     this.sendSyncTime(hardwareId);
   }
 
-  private async handleEnrollEvent(data: Buffer) {
-    if (data.length < 36) {
+  private async handleFaceEnrollmentResponse(data: Buffer) {
+    const faceId = data.readInt32LE(0);
+    this.logger.log(`[Enroll Response] Received response for faceId: ${faceId}`);
+
+    if (data.length < 2084) {
       this.logger.error(
-        `[Enroll] Payload too small to contain face_id and redis_key. Length: ${data.length}`,
+        `[Enroll Response] Face ID is valid, but payload is missing embedding vectors. Length: ${data.length}`,
+      );
+      this.eventEmitter.emit(
+        'face.registered',
+        faceId,
+        undefined,
+        'Incomplete data received from device.',
       );
       return;
     }
 
+    // Explicitly create a Buffer from a standard ArrayBuffer to ensure type compatibility
+    const rawUint8Array = data.subarray(4, 2084);
+    const arrayBuffer =
+      rawUint8Array.buffer.slice(
+        rawUint8Array.byteOffset,
+        rawUint8Array.byteOffset + rawUint8Array.byteLength,
+      );
+    const embedVector = Buffer.from(arrayBuffer);
+
+    this.eventEmitter.emit('face.registered', faceId, embedVector);
+  }
+
+  private async handleLocalEnrollment(data: Buffer, hardwareId: string) {
+    // eventType (-4) + deviceFaceId (4) + features (2048) + jpeg_image (variable)
+    const MIN_PAYLOAD_SIZE = 4 + 4 + 2048;
+    if (data.length <= MIN_PAYLOAD_SIZE) {
+      this.logger.error(`Payload for local enrollment is too small. Length: ${data.length}`);
+      return;
+    }
+
+    const deviceFaceId = data.readInt32LE(4);
+    const embedVector = data.subarray(8, 8 + 2048);
+    const jpegImage = data.subarray(8 + 2048);
+
+    this.logger.log(`Processing local enrollment for deviceFaceId: ${deviceFaceId} from ${hardwareId}. Image size: ${jpegImage.length} bytes.`);
+
     try {
-      const face_id = data.readInt32LE(0);
-      const redisKeyBuffer = data.slice(4, 36);
-      const nullIndex = redisKeyBuffer.indexOf(0);
-      const redis_key = redisKeyBuffer
-        .slice(0, nullIndex !== -1 ? nullIndex : 32)
-        .toString('utf8');
+      const device = await this.prisma.device.findUnique({
+        where: { hardwareId },
+      });
 
-      this.logger.log(`[Enroll] Parsed Face ID: ${face_id}`);
-      this.logger.log(`[Enroll] Parsed Redis Key: "${redis_key}"`);
-
-      const cachedData = await this.redisService.get(redis_key);
-
-      if (!cachedData) {
-        this.logger.warn(
-          `[Enroll] Redis key "${redis_key}" not found or expired.`,
-        );
+      if (!device || !device.houseId) {
+        this.logger.error(`Device ${hardwareId} or its associated house not found.`);
         return;
       }
 
-      if (face_id === -1) {
-        this.eventEmitter.emit(redis_key, {
-          message: 'ok',
-          face_id: -1,
-          detail: 'No face detected or registration failed on device.',
-        });
-        await this.redisService.del(redis_key);
-        return;
-      }
-
-      if (data.length < 2084) {
-        this.logger.error(
-          `[Enroll] Face ID is valid, but payload is missing embedding vectors.`,
-        );
-        this.eventEmitter.emit(redis_key, {
-          error: 'Incomplete data received from device.',
-        });
-        await this.redisService.del(redis_key);
-        return;
-      }
-
-      const embedVector = Buffer.from(data.subarray(36, 2084));
-
-      await this.prisma.faceData.create({
-        data: {
-          label: cachedData.label || 'Unknown',
-          img_url: cachedData.imageUrl,
-          userId: cachedData.userId,
-          face_id: face_id,
-          embedVector: embedVector,
+      const houseOwner = await this.prisma.user.findFirst({
+        where: {
+          houseId: device.houseId,
+          role: Role.OWNER,
         },
       });
 
-      this.eventEmitter.emit(redis_key, { message: 'ok', face_id });
-      await this.redisService.del(redis_key);
-      this.logger.log(
-        `[Enroll] Successfully registered face ${face_id} for key ${redis_key}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        '[Enroll] Failed to parse or process enroll event.',
-        error.stack,
-      );
-      const redisKeyBuffer = data.slice(4, 36);
-      const nullIndex = redisKeyBuffer.indexOf(0);
-      const redis_key = redisKeyBuffer
-        .slice(0, nullIndex !== -1 ? nullIndex : 32)
-        .toString('utf8');
-      if (redis_key) {
-        this.eventEmitter.emit(redis_key, {
-          error: 'Internal server error while processing face data.',
-        });
-        await this.redisService.del(redis_key);
+      if (!houseOwner) {
+        this.logger.error(`Owner for houseId ${device.houseId} not found.`);
+        return;
       }
+
+      // Upload image to Cloudinary
+      const uploadResult = await this.cloudinaryService.uploadImage(jpegImage);
+      if (!uploadResult || !uploadResult.secure_url) {
+        this.logger.error('Failed to upload image to Cloudinary.');
+        return;
+      }
+
+      // Create the face data entry
+      const newFace = await this.prisma.faceData.create({
+        data: {
+          userId: houseOwner.id,
+          label: `New Face from ${hardwareId}`,
+          img_url: uploadResult.secure_url,
+          embedVector: Buffer.from(embedVector), // Ensure it's a standard Buffer
+        },
+      });
+
+      // Update the label with the actual ID for easier identification
+      const finalFace = await this.prisma.faceData.update({
+        where: { id: newFace.id },
+        data: { label: `Face ${newFace.id}` },
+        include: { user: true },
+      });
+
+      this.logger.log(`Successfully created new face with server ID: ${finalFace.id} for user ${houseOwner.email}`);
+
+      // Send confirmation back to the device
+      const controlTopic = `esp32/${hardwareId}/control`;
+      const responsePayload = {
+        cmd: 'return_regis',
+        face_id: finalFace.id,
+      };
+      this.mqttService.publish(controlTopic, JSON.stringify(responsePayload));
+      this.logger.log(`Sent registration confirmation to ${controlTopic} with server face ID ${finalFace.id}`);
+
+      // Notify web clients
+      this.eventsGateway.sendToAll('new_face_enrolled', finalFace);
+
+    } catch (error) {
+      this.logger.error(`Failed to process local enrollment for device ${hardwareId}:`, error.stack);
     }
   }
 }

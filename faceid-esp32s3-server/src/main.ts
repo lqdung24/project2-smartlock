@@ -15,8 +15,11 @@ async function bootstrap() {
     options: {
       host: configService.get<string>('MQTT_HOST'),
       port: configService.get<number>('MQTT_PORT'),
-      username: configService.get<string>('MQTT_USERNAME'), // Add MQTT username
-      password: configService.get<string>('MQTT_PASSWORD'), // Add MQTT password
+      username: configService.get<string>('MQTT_USERNAME'),
+      password: configService.get<string>('MQTT_PASSWORD'),
+      // Cấu hình nâng cao cho Server:
+      clientId: 'nestjs_backend_server_fixed', // Cố định ID của server trên broker
+      clean: false, // Tương đương với disable_clean_session = true (Giữ lại phiên)
     },
   });
 

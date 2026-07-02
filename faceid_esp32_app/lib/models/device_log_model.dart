@@ -7,6 +7,7 @@ class DeviceLog {
   final int? userId;
   final String source;
   final dynamic user; // Can be null or a user object
+  final dynamic face; // Can be null or a face object
   final DeviceModel device;
 
   DeviceLog({
@@ -16,6 +17,7 @@ class DeviceLog {
     this.userId,
     required this.source,
     this.user,
+    this.face,
     required this.device,
   });
 
@@ -27,6 +29,7 @@ class DeviceLog {
       userId: json['userId'],
       source: json['source'],
       user: json['user'],
+      face: json['face'],
       device: DeviceModel.fromJson(json['device']),
     );
   }

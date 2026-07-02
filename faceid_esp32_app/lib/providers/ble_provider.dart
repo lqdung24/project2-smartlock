@@ -55,15 +55,16 @@ class BleScanNotifier extends AutoDisposeNotifier<BleScanState> {
     state = state.copyWith(isScanning: true, discoveredDevices: [], errorMessage: null);
     _scanSubscription?.cancel();
     _scanSubscription = _bleService.startScan().listen((device) {
-      final newList = List<BleDevice>.from(state.discoveredDevices);
-      final existingIndex = newList.indexWhere((d) => d.deviceId == device.deviceId);
-      if (existingIndex != -1) {
-        newList[existingIndex] = device;
-      } else {
-        newList.add(device);
+      if (device.name != null && device.name!.isNotEmpty) {
+        final newList = List<BleDevice>.from(state.discoveredDevices);
+        final existingIndex = newList.indexWhere((d) => d.deviceId == device.deviceId);
+        if (existingIndex != -1) {
+          newList[existingIndex] = device;
+        } else {
+          newList.add(device);
+        }
+        state = state.copyWith(discoveredDevices: newList);
       }
-      state = state.copyWith(discoveredDevices: newList);
-
     }, onError: (error) {
       state = state.copyWith(isScanning: false, errorMessage: error.toString());
     });

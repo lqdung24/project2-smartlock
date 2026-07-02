@@ -1,15 +1,77 @@
-%! Author = lqdung
-%! Date = 6/30/26
+\section{Thiết kế cơ sở dữ liệu}
 
-% Preamble
-\documentclass[11pt]{article}
+\subsection{Cấu trúc dữ liệu cục bộ trên Flash (NVS \& SPIFFS)}
 
-% Packages
-\usepackage{amsmath}
+Hệ thống nhận diện khuôn mặt tại biên yêu cầu khả năng lưu trữ dữ liệu phi cấu trúc, cấu trúc và nhật ký (log) ngoại tuyến một cách bền vững trên bộ nhớ Flash của vi điều khiển ESP32-S3. Để tối ưu tốc độ đọc/ghi, giảm thiểu độ trễ khi thực hiện thuật toán so khớp (matching) dữ liệu và bảo toàn tính toàn vẹn của dữ liệu khi xảy ra sự cố mất nguồn đột ngột, bộ nhớ Flash được quy hoạch thành các phân vùng chuyên biệt thông qua bảng phân vùng (\textit{Partition Table}).
 
-% Document
-\begin{document}
+\subsubsection{Sơ đồ cấu trúc phân vùng nhớ Flash (Memory Map)}
+
+Dựa trên cấu hình phần cứng của hệ thống, chip ESP32-S3 với dung lượng Flash 8MB được phân bổ tài nguyên bộ nhớ theo cấu trúc định sẵn nhằm tối ưu hóa không gian lưu trữ cho cả Firmware hệ thống lẫn dữ liệu nhận diện thông minh.
+
+\begin{table}[H]
+    \centering
+    \caption{Bảng cấu hình phân vùng chi tiết trên bộ nhớ Flash ESP32-S3}
+    \label{tab:partition_table}
+    \small
+    \begin{tabularx}{\textwidth}{lllcrcX}
+\toprule
+\textbf{Name} & \textbf{Type} & \textbf{SubType} & \textbf{Offset} & \textbf{Size} & \textbf{Flags} & \textbf{Mục đích sử dụng} \\
+\midrule
+\texttt{nvs}      & data & nvs      & \texttt{0x10000}  & \texttt{0xA000}   & -- & Lưu cấu hình Wi-Fi, MQTT Token, Key-Value hệ thống. \\
+\texttt{factory}  & app  & factory  & \texttt{0x1D000}  & \texttt{0x500000} & -- & Phân vùng chứa chương trình thực thi chính (FreeRTOS App). \\
+\texttt{face}     & data & spiffs   & \texttt{0x51D000} & \texttt{0x200000} & -- & Hệ thống tệp tin tĩnh lưu dữ liệu khuôn mặt và log ngoại tuyến. \\
+\bottomrule
+    \end{tabularx}
+\end{table}
 
 
+\subsubsection{Kiến trúc lưu trữ hệ thống tệp tin tĩnh trên phân vùng \texttt{face} (SPIFFS)}
 
-\end{document}
+Phân vùng \texttt{face} với kích thước \texttt{0x200000} (tương đương 2MB) được định dạng theo chuẩn hệ thống tệp tin nhị phân tĩnh \textbf{SPIFFS} (\textit{SPI Flash File System}). Việc quản lý và đồng bộ dữ liệu nhận diện khuôn mặt cục bộ tại biên được thực hiện thông qua ba tệp tin nhị phân (\texttt{.bin}) cốt lõi dưới đây:
+
+\paragraph{A. Tệp tin định danh khuôn mặt (\texttt{face.bin})}
+Tệp tin định danh khuôn mặt (`face.bin`) đóng vai trò lưu trữ toàn bộ các Vector nhúng đặc trưng (*Face Embeddings*) được trích xuất trực tiếp từ mô hình mạng học sâu MobileFaceNet.
+
+Mỗi khuôn mặt của một người dùng sau khi trích xuất thành công sẽ được biểu diễn dưới dạng một mảng số thực dấu phẩy động 32-bit (`float`) gồm 512 chiều. Do đó, kích thước vùng nhớ vật lý cho mỗi vector đặc trưng là $512 \times 4 \text{ bytes} = 2048 \text{ bytes}$.
+
+Tệp tin `face.bin` được cấu trúc như một mảng phẳng tuyến tính cố định, hỗ trợ lưu trữ tối đa lên đến 500 khuôn mặt, tương đương tổng dung lượng tệp tin đạt mức $2048 \text{ bytes} \times 500 = 1,024,000 \text{ bytes}$, xấp xỉ 1 MB.
+
+Về cơ chế truy vấn, chỉ số mảng lưu trữ trong tệp tin tương ứng chính xác với định danh cục bộ `enroll_id` (giá trị chạy từ $0 \rightarrow 499$). Khi camera ghi nhận khung hình, chip ESP32-S3 nạp toàn bộ cấu trúc mảng từ file này lên bộ nhớ RAM tĩnh (SRAM) để thực hiện tính toán độ tương đồng Cosine song song, giúp tối ưu hóa thời gian xử lý thực tế xuống dưới 100ms.
+
+\paragraph{B. Tệp tin ánh xạ định danh (\texttt{face\_map.bin})}
+Do mô hình AI triển khai tại phần cứng lớp biên chỉ xử lý và trả về định danh số nguyên dạng vùng nhớ cục bộ (\texttt{enroll\_id}), hệ thống cần một cơ chế ánh xạ thời gian thực sang ID thực tế quản lý trên hệ thống Cloud Server. Nhiệm vụ này được đảm nhiệm bởi tệp tin \texttt{face\_map.bin}. Tệp tin lưu trữ một cấu trúc mảng \texttt{user\_face\_map} với kích thước bằng \texttt{MAX\_FACES} (500 phần tử), trong đó mỗi phần tử được định nghĩa bằng một cấu trúc dữ liệu nhỏ gọn:
+
+\paragraph{C. Tệp tin nhật ký ngoại tuyến (\texttt{offline\_log.bin})}
+Nhằm đảm bảo tính sẵn sàng cao đặc trưng của hệ thống mạng biên, khi thiết bị gặp sự cố mất kết nối mạng Wi-Fi hoặc mất liên lạc với hệ thống MQTT Broker, mọi sự kiện quét thẻ hoặc nhận diện khuôn mặt đều không bị gián đoạn. Tệp tin \texttt{offline\_log.bin} hoạt động giống như một cấu trúc hàng đợi tuần tự.
+
+Mỗi bản ghi nhật ký ngoại tuyến lưu lại thông tin tinh giản bao gồm: \texttt{user\_id} (int16\_t), trạng thái kích hoạt cửa \texttt{status} (bool) và mốc thời gian sự kiện \texttt{timestamp} dạng Unix (uint32\_t) được đồng bộ từ chip đồng hồ thời gian thực RTC tích hợp.
+
+Ngay khi mạng không dây được khôi phục, bộ vi xử lý ESP32-S3 sẽ kích hoạt tiến trình đọc tuần tự tệp tin \texttt{offline\_log.bin}, đẩy ngược dữ liệu tích lũy lên Cloud thông qua các gói tin MQTT và tiến hành xóa trắng tệp tin nhằm giải phóng hoàn toàn dung lượng lưu trữ cho phân vùng vật lý.
+
+\subsection{Mô hình dữ liệu quan hệ trên Cloud Server}
+Cơ sở dữ liệu trên Cloud Server đóng vai trò trung tâm, quản lý toàn bộ thông tin về các tòa nhà, căn hộ, người dùng và các mối quan hệ phức tạp giữa chúng. Việc thiết kế một mô hình dữ liệu quan hệ (Relational Database) chặt chẽ và hiệu quả là yếu tố then chốt để đảm bảo tính toàn vẹn, khả năng mở rộng và hiệu suất truy vấn của hệ thống. Mô hình này được xây dựng dựa trên việc phân rã thông tin thành các thực thể (Entities) riêng biệt và xác định các mối quan hệ (Relationships) giữa chúng.
+
+\subsubsection{Phân tích và thiết kế các thực thể chính}
+\textbf{Bảng User (Người dùng):} Đây là bảng gốc quản lý định danh của toàn bộ các thực thể người dùng trong hệ thống (bao gồm Quản trị viên, Cư dân, Khách). Trường id (kiểu int4) đóng vai trò là khóa chính tự tăng (Primary Key). Thuộc tính role sử dụng kiểu dữ liệu liệt kê (Role) để phân quyền động (chẳng hạn như Admin, Resident, Guest), làm cơ sở cho bộ lọc bảo mật kiểm tra điều kiện truy cập hệ thống từ xa.
+
+\textbf{Bảng User\_Token (Quản lý phiên đăng nhập):} Nhằm phục vụ cơ chế xác thực không trạng thái (Stateless Authentication) qua kiến trúc RESTful API, bảng này lưu trữ chuỗi refreshToken đi kèm thời hạn expireTime. Bản ghi liên kết trực tiếp với bảng User qua khóa ngoại userId theo quan hệ một - nhiều ($1-N$), cho phép một người dùng sở hữu nhiều token thiết bị (Smartphone, Tablet) cùng một thời điểm.
+
+\textbf{Bảng FaceData (Dữ liệu sinh trắc học):} Bảng này lưu trữ các khuôn mặt đã được số hóa. Thuộc tính quan trọng nhất là embedVector với kiểu dữ liệu nhị phân bytea (Byte Array), chứa mảng số thực float 512 chiều trích xuất từ mô hình AI. Khóa ngoại userId thiết lập mối quan hệ $1-N$ với bảng User, hỗ trợ việc một cư dân có thể đăng ký nhiều góc độ khuôn mặt khác nhau để tăng tỷ lệ nhận diện chính xác tại biên.
+
+\textbf{Bảng Device (Thiết bị biên / Khóa thông minh):} Đại diện cho các phần cứng lớp biên (ESP32-S3) được cài đặt thực tế tại các cửa phòng. Bảng quản lý mã cứng định danh thiết bị hardwareId và chuỗi mã hóa an toàn mqttToken dùng để xác thực quyền kết nối với MQTT Broker. Trạng thái hoạt động vật lý của khóa (Online, Offline, Maintenance) được cập nhật liên tục qua thuộc tính status (Status).
+
+\textbf{Bảng User\_Lock (Phân quyền truy cập cửa):} Đây là bảng trung gian dùng để giải quyết mối quan hệ nhiều - nhiều ($N-N$) giữa hai thực thể User và Device. Thông qua việc ánh xạ hai khóa ngoại userId và lockId, hệ thống có thể cấu hình động quyền ra vào: một người dùng có quyền mở nhiều khóa cửa vật lý khác nhau, và ngược lại một thiết bị cửa có thể được mở bởi nhiều cư dân hợp lệ.
+
+\textbf{Bảng DeviceLog (Nhật ký truy cập hệ thống):} Đóng vai trò là hệ thống lưu vết (Audit Trail) phục vụ công tác giám sát an ninh. Mỗi khi có sự kiện kích hoạt mở cửa, một bản ghi được tạo ra chứa time (mốc thời gian thực thi) và source (kiểu dữ liệu Source chỉ rõ phương thức mở cửa: quét khuôn mặt tại biên Face, hoặc nhấn nút trên ứng dụng App). Bảng thiết lập quan hệ ngoại khóa với FaceData (faceid) và Device (deviceId) để truy vết chính xác ai đã mở cửa nào.
+
+\subsubsection{Sơ đồ quan hệ thực thể (ERD)}
+Để trực quan hóa cấu trúc và các mối quan hệ này, sơ đồ quan hệ thực thể (ERD) dưới đây được sử dụng. Sơ đồ này mô tả chi tiết các bảng, các trường dữ liệu trong mỗi bảng, kiểu dữ liệu, khóa chính (PK), khóa ngoại (FK) và các mối quan hệ (1-1, 1-N, N-N) giữa các bảng.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/db.png}
+    \caption{Sơ đồ quan hệ thực thể (ERD) của cơ sở dữ liệu}
+    \label{fig:erd_diagram}
+\end{figure}
+
+Mô hình ERD này đảm bảo dữ liệu được tổ chức một cách logic, giảm thiểu sự dư thừa và không nhất quán. Các khóa ngoại (FK) đóng vai trò là cầu nối, liên kết các bảng lại với nhau và thực thi các ràng buộc toàn vẹn tham chiếu. Ví dụ, không thể xóa một tòa nhà (\texttt{Buildings}) nếu vẫn còn các căn hộ (\texttt{Apartments}) thuộc về nó. Tương tự, lịch sử truy cập (\texttt{AccessLogs}) luôn tham chiếu đến một người dùng (\texttt{Users}) và một thiết bị (\texttt{Devices}) hợp lệ. Cấu trúc này không chỉ giúp cho việc truy vấn dữ liệu trở nên hiệu quả (ví dụ: lấy tất cả lịch sử truy cập của một người dùng trong một tòa nhà cụ thể) mà còn tạo nền tảng vững chắc cho việc phát triển các tính năng phức tạp hơn trong tương lai như phân quyền chi tiết, báo cáo thống kê và tích hợp với các hệ thống khác.

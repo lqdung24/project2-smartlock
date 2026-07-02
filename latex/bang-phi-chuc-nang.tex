@@ -1,28 +1,18 @@
-\begin{table}[htbp]
+\begin{table}[H]
     \caption{Đặc tả định lượng các chỉ số phi chức năng về hiệu năng hệ thống}
     \label{tab:non_functional_latency}
     \centering
     \small
-    \renewcommand{\arraystretch}{1.4} % Giúp các dòng giãn cách thoáng, dễ đọc
-    \setlength{\tabcolsep}{6pt}      % Khoảng cách đệm giữa các cột
-
-    % Định nghĩa kiểu cột Y tự động bọc chữ và căn trái
-    \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
-
-    % Chuyển sang dùng tabularx để tự động tính toán bề ngang khít lề trang A4
-    \begin{tabularx}{\textwidth}{c l Y l}
+    \renewcommand{\arraystretch}{1.4}
+    \begin{tabularx}{\textwidth}{c l X l}
         \toprule
         \textbf{STT} & \textbf{Tiêu chí chất lượng} & \textbf{Phương pháp đo lường} & \textbf{Chỉ số định lượng} \\
         \midrule
         1 & Độ trễ xử lý toán học AI & Đo bằng hàm \texttt{esp\_timer\_get\_time()} & $\le 1.0$ giây \\
         \midrule
-        2 & Tổng thời gian phản hồi & Tính tổng luồng từ Camera đến Chốt Relay & $\le 1.5$ giây \\
+        2 & Tổng thời gian phản hồi & Tính tổng luồng từ Camera đến đèn báo & $\le 1.5$ giây \\
         \midrule
-        3 & Thời gian giữ chốt mở & Bộ đếm thời gian thực FreeRTOS & 5.0 giây (mặc định) \\
-        \midrule
-        4 & Độ trễ lệnh mở từ xa & Đo từ lúc bấm nút trên App đến khi nạp lệnh & $< 200$ mili-giây \\
-        \midrule
-        5 & Tính sẵn sàng hệ thống & Đo thời gian uptime vận hành liên tục & $\ge 99.9\%$ ($24/7$) \\
+        3 & Độ trễ lệnh mở từ xa & Đo từ lúc bấm nút trên App đến khi nạp lệnh & $< 200$ mili-giây \\
         \bottomrule
     \end{tabularx}
 \end{table}

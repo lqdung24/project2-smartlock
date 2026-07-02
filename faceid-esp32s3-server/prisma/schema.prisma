@@ -14,22 +14,18 @@ model House {
 }
 
 model User {
-  id            Int             @id @default(autoincrement())
-  email         String          @unique
+  id            Int          @id @default(autoincrement())
+  email         String       @unique
   name          String?
   password      String
-  role          Role            @default(OWNER)
+  role          Role         @default(OWNER)
   houseId       Int?
-  house         House?          @relation(fields: [houseId], references: [id], onDelete: SetNull)
+  house         House?       @relation(fields: [houseId], references: [id], onDelete: SetNull)
   refreshTokens User_Token[]
-  requestsSent  House_Request[] @relation("requester")
-  requestsOwned House_Request[] @relation("owner")
 
   enrolFaces FaceData[] @relation("user_face")
 
   userLocks User_Lock[] @relation("user_lock")
-
-  deviceLogs DeviceLog[] @relation("device_log_user")
 }
 
 model User_Token {
@@ -41,26 +37,16 @@ model User_Token {
 }
 
 model Device {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   name        String
-  hardwareId  String   @unique
+  hardwareId  String      @unique
   mqttToken   String
   tokenExpiry DateTime
   houseId     Int
-  house       House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
-
-  userLocks  User_Lock[] @relation("user_lock_v2")
-  deviceLogs DeviceLog[] @relation("device_log_device")
-}
-
-model House_Request {
-  id          Int           @id @default(autoincrement())
-  createAt    DateTime      @default(now())
-  requesterId Int
-  requestUser User          @relation("requester", fields: [requesterId], references: [id])
-  ownerId     Int
-  owner       User          @relation("owner", fields: [ownerId], references: [id])
-  status      RequestStatus @default(PENDING)
+  house       House       @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  status      Status      @default(ACTIVE)
+  userLocks   User_Lock[] @relation("user_lock_v2")
+  deviceLogs  DeviceLog[] @relation("device_log_device")
 }
 
 enum Role {
@@ -68,10 +54,8 @@ enum Role {
   MEMBER
 }
 
-enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
+enum Status {
+  ACTIVE
   DELETED
 }
 
@@ -82,9 +66,10 @@ model FaceData {
   userId   Int
   createAt DateTime @default(now())
 
-  user        User  @relation("user_face", fields: [userId], references: [id])
-  embedVector Bytes
-  face_id     Int
+  user        User        @relation("user_face", fields: [userId], references: [id])
+  embedVector Bytes?
+  status      Status      @default(ACTIVE)
+  deviceLogs  DeviceLog[] @relation("device_log_user")
 }
 
 model User_Lock {
@@ -105,9 +90,9 @@ model DeviceLog {
   id       Int      @id @default(autoincrement())
   deviceId Int
   time     DateTime
-  userId   Int?
+  faceid   Int?
   source   Source   @default(FACEID)
 
-  user   User?  @relation("device_log_user", fields: [userId], references: [id])
-  device Device @relation("device_log_device", fields: [deviceId], references: [id])
+  face   FaceData? @relation("device_log_user", fields: [faceid], references: [id])
+  device Device    @relation("device_log_device", fields: [deviceId], references: [id])
 }

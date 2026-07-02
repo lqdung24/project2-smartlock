@@ -1,82 +1,100 @@
 \chapter{PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG}
 
 \section{Phân tích yêu cầu hệ thống}
-\subsection{Yêu cầu chức năng (Functional Requirements)}
-% Viết phân tích chi tiết các nhóm chức năng tại đây (Khoảng 600 từ)
-\begin{itemize}
-    \item Nhóm chức năng kiểm soát và nhận diện tại thiết bị biên.
-    \item Nhóm chức năng cấu hình và quản trị thông qua Mobile App.
-    \item Nhóm chức năng an ninh, giám sát và cảnh báo hệ thống.
-\end{itemize}
+\subsection{Yêu cầu chức năng}
+Yêu cầu chức năng đặc tả toàn bộ các hành vi nghiệp vụ, luồng xử lý dữ liệu và phản hồi tương tác mà hệ thống bắt buộc phải thực thi. Để phục vụ công tác thiết kế phần mềm và lập trình chi tiết, các yêu cầu này được phân tách cấu trúc thành ba phân hệ cốt lõi: Phân hệ xử lý tại thiết bị biên, Phân hệ tương tác phía ứng dụng di động, và Phân hệ quản trị điều phối tại máy chủ trung tâm.
 
-\subsection{Yêu cầu phi chức năng (Non-functional Requirements)}
-% Viết đặc tả chỉ số chất lượng phần cứng, phần mềm (Khoảng 400 từ)
-% Chèn bảng đặc tả hiệu năng ở đây
-\begin{table}[htbp]
-\caption{Đặc tả các chỉ số phi chức năng của hệ thống}
-\label{tab:non_functional}
-\centering
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{STT} & \textbf{Tiêu chí chất lượng} & \textbf{Ngưỡng thông số kỹ thuật} \\ \hline
-1 & Thời gian phản hồi nhận diện & $< 1.5$ giây \\ \hline
-2 & Tỷ lệ chấp nhận sai người (FAR) & $< 0.001\%$ \\ \hline
-3 & Tỷ lệ từ chối đúng người (FRR) & $< 1\%$ \\ \hline
-4 & Tính sẵn sàng của hệ thống (Availability) & Chạy độc lập 24/7 kể cả mất Internet \\ \hline
-\end{tabular}
-\end{table}
+\subsubsection{Phân hệ quản lý và xử lý dữ liệu tại thiết bị biên}
+Bo mạch ESP32-S3 Cam đóng vai trò là điểm chốt chặn vật lý và xử lý tính toán AI trực tiếp tại thực địa. Chức năng đầu tiên là thu thập và tiền xử lý hình ảnh, trong đó hệ thống khởi tạo cảm biến camera OV2640/OV3660 ở chế độ màu RGB888 với độ phân giải QVGA hoặc VGA. Cảm biến này liên tục bắt các khung hình theo thời gian thực và đẩy vào bộ đệm DMA, đồng thời thực hiện các bước chuẩn hóa ma trận điểm ảnh, điều chỉnh độ phơi sáng và cân bằng trắng tự động để giảm thiểu nhiễu môi trường trước khi đưa dữ liệu vào các tầng mạng học sâu.
 
-\section{Sơ đồ kiến trúc hệ thống (System Architecture)}
-\subsection{Kiến trúc tổng thể hệ thống mạng Edge-to-Cloud}
-% Phân tích mối quan hệ giữa ESP32-S3, Server NestJS và App Flutter (Khoảng 500 từ)
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=0.8\textwidth]{images/ch3/system_architecture.png}
-% \caption{Sơ đồ kiến trúc tổng thể hệ thống}
-% \end{figure}
+Tiếp theo, hệ thống thực hiện chức năng phát hiện và căn chỉnh khuôn mặt cục bộ bằng cách chạy mạng nơ-ron tích chập phân tầng MTMN trực tiếp trên luồng ảnh đệm để xác định sự tồn tại của cấu trúc khuôn mặt người. Kết quả của quá trình này là tọa độ hộp giới hạn bao quanh khuôn mặt và vị trí của 5 điểm neo đặc trưng, từ đó hệ thống thực hiện phép xoay ma trận hình học để căn chỉnh khuôn mặt về trạng thái thẳng góc trực diện với camera.
 
-\subsection{Sơ đồ khối chức năng phần cứng tại biên}
-% Đặc tả luồng tương tác linh kiện ngoại vi kết nối với ESP32-S3 (Khoảng 500 từ)
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=0.8\textwidth]{images/ch3/hardware_block.png}
-% \caption{Sơ đồ khối chức năng phần cứng thiết bị khóa}
-% \end{figure}
+Sau khi căn chỉnh, chức năng trích xuất đặc trưng và so khớp thực thể được kích hoạt. Vùng ảnh khuôn mặt được chuyển qua kiến trúc mạng MobileFaceNet để trích xuất thành một chuỗi số thực dấu phẩy động 512 chiều. Hệ thống sau đó sử dụng thuật toán Khoảng cách Euclid ($d$) để so sánh vectơ nhúng vừa trích xuất với danh sách các vectơ mẫu đã lưu trữ trên bộ nhớ Flash. Nếu khoảng cách nhỏ hơn hoặc bằng một ngưỡng (Threshold) đã định, hệ thống xác thực thành công danh tính và trả về User ID tương ứng.
 
-\section{Các biểu đồ mô hình hóa phần mềm UML}
+Cuối cùng, khi danh tính được xác thực, chức năng điều khiển cơ cấu chấp hành và trạng thái ngoại vi sẽ hoạt động. Vi điều khiển xuất tín hiệu logic mức cao ra chân GPIO nối với module Relay trong một khoảng thời gian định sẵn, làm đóng mạch điện 12V DC để rút chốt khóa điện từ Solenoid và mở cửa. Đồng thời, đèn LED trạng thái sẽ nháy màu xanh lá và còi buzz phát tín hiệu thông báo. Khi hết thời gian, chân GPIO tự động hạ xuống mức thấp để ngắt nguồn và khóa cửa.
+
+\subsubsection{Phân hệ quản trị và tương tác qua Ứng dụng di động}
+Ứng dụng di động phát triển trên nền tảng Flutter đóng vai trò là giao diện tương tác trực quan dành cho Chủ nhà, Quản lý tòa nhà và Cư dân. Một trong những chức năng chính là đăng ký và cấu hình khuôn mặt cư dân mới. Khi Admin kích hoạt chế độ này, ứng dụng gửi lệnh qua WebSocket Server xuống ổ khóa đích, chuyển thiết bị sang trạng thái thu thập dữ liệu. ESP32-S3 sẽ mở luồng truyền phát video trực tiếp lên màn hình ứng dụng để Admin hướng dẫn người dùng điều chỉnh góc nhìn. Sau khi có được góc chụp tối ưu, vi điều khiển sẽ trích xuất vector nhúng, gán nhãn \texttt{user\_id} và ghi nhận đồng bộ vào bộ nhớ Flash cục bộ cũng như cơ sở dữ liệu trên Cloud Server.
+
+Ngoài ra, ứng dụng còn cung cấp chức năng giám sát an ninh và điều khiển từ xa. Người quản lý có thể chủ động nhấn nút "Mở cửa từ xa" trên giao diện. Lệnh này được mã hóa và gửi xuống topic của giao thức MQTT, buộc ổ khóa phải thực thi tác vụ mở chốt Relay ngay lập tức mà không cần qua bước quét camera.
+
+\subsubsection{Phân hệ điều phối và logic vận hành trên Backend Server}
+Máy chủ trung tâm sử dụng NestJS và Prisma ORM để quản lý logic nghiệp vụ và lưu trữ dữ liệu. Chức năng quan trọng nhất là đồng bộ và đảm bảo tính nhất quán của dữ liệu. Máy chủ quản lý tính toàn vẹn và mối quan hệ giữa các bảng dữ liệu. Khi có sự thay đổi về nhân sự, Server sẽ tự động kích hoạt tiến trình đồng bộ, gửi lệnh xóa vector đặc trưng của người dùng đó trên bộ nhớ của thiết bị khóa cửa.
+
+Bên cạnh đó, máy chủ còn có chức năng ghi nhận và kết xuất nhật ký an ninh. Với vai trò là một MQTT Subscriber, Server liên tục lắng nghe dữ liệu sự kiện từ các thiết bị khóa. Mỗi lượt quét khuôn mặt đều được Server ghi nhận, giải mã gói tin JSON và chèn vào bảng \texttt{AccessLogs} trong cơ sở dữ liệu với đầy đủ thông tin như \texttt{timestamp}, \texttt{device_id}, \texttt{user_id}, và trạng thái xác thực.
+
+\subsection{Yêu cầu phi chức năng}
+Yêu cầu phi chức năng đóng vai trò quyết định trong việc định lượng tiêu chuẩn chất lượng và đảm bảo hệ thống vận hành một cách mượt mà, tin cậy trong môi trường thực tế. Đối với một hệ thống khóa cửa thông minh ứng dụng trí tuệ nhân tạo tại biên, các tiêu chí về tốc độ xử lý toán học AI, tổng thời gian phản hồi của hệ thống và tính sẵn sàng hoạt động là những chỉ số phi chức năng cốt lõi cần được thiết lập và tối ưu hóa một cách tường minh.
+
+\subsubsection{Độ trễ xử lý toán học AI tại thiết bị biên}
+Do phần cứng vi điều khiển ESP32-S3 có tài nguyên bộ nhớ và xung nhịp giới hạn so với các máy tính nhúng hiệu năng cao, độ trễ khi thực thi các mô hình học sâu là một thách thức lớn. Hệ thống yêu cầu thời gian tính toán của riêng khối toán học AI bắt buộc phải đạt mức tối ưu dưới $1.0$ giây. Chỉ số này quyết định năng lực tính toán tại biên của chip và đảm bảo luồng suy luận của thuật toán không gây ra hiện tượng nghẽn cổ chai vật lý tại thiết bị.
+
+\subsubsection{Tổng thời gian phản hồi hệ thống}
+Tổng thời gian phản hồi hệ thống được tính từ mốc thời gian hệ thống phát hiện có vật thể trước camera, thực thi toàn bộ luồng xử lý nhận diện AI, xuất lệnh điều khiển qua chân GPIO kích hoạt mạch Relay mở chốt khóa điện từ Solenoid, cho đến khi hoàn thành việc đồng bộ và bắn gói tin nhật ký dạng JSON lên MQTT Broker về phía Server và hiển thị trạng thái tương ứng trên ứng dụng di động Flutter. Để đảm bảo trải nghiệm liền mạch cho cư dân khi ra vào căn hộ, tổng thời gian phản hồi toàn luồng khép kín này yêu cầu phải nằm trong ngưỡng dưới $1.5$ giây.
+
+\subsubsection{Tính sẵn sàng và độ bền bỉ của hệ thống}
+Là một thiết bị an ninh bảo vệ trực tiếp cho nhà thông minh, hệ thống khóa cửa đòi hỏi tính ổn định và bền bỉ tối đa trong điều kiện vận hành liên tục $24/7$. Chỉ số sẵn sàng của hệ thống yêu cầu đạt tối thiểu $99.9\%$. Đặc biệt, cơ chế rẽ nhánh logic phải đảm bảo tính sẵn sàng offline: khi xảy ra sự cố mất kết nối Wi-Fi hoặc mất liên lạc với Cloud Server, luồng nghiệp vụ cốt lõi vẫn phải hoạt động độc lập và bình thường dựa trên vùng nhớ Flash cục bộ của ESP32-S3, ngăn ngừa tuyệt đối tình trạng cư dân bị kẹt lại phía ngoài do sự cố đường truyền mạng.
+
+Để cụ thể hóa các tiêu chuẩn kỹ thuật trên, các chỉ số phi chức năng của đề tài được định lượng chi tiết trong Bảng \ref{tab:non_functional_latency}.
+
+\input{bang-phi-chuc-nang.tex}
+
+\section{Kiến trúc tổng thể hệ thống}
+\label{sec:architecture}
+
+Hệ thống được thiết kế dựa trên mô hình kiến trúc phân tầng từ biên đến đám mây, tối ưu hóa cho các ứng dụng IoT thời gian thực. Kiến trúc này đảm bảo tính đóng gói, khả năng mở rộng và giảm thiểu độ trễ trong quá trình xử lý dữ liệu cũng như truyền nhận lệnh điều khiển. Toàn bộ hệ thống được phân cấp tường minh thành ba tầng lõi bao gồm: Tầng thiết bị, Tầng trung gian, và Tầng ứng dụng.
+
+\subsection{Tầng thiết bị}
+Trung tâm của tầng biên là vi điều khiển \textbf{ESP32-S3 Cam}, thành phần phần cứng chịu trách nhiệm giao tiếp vật lý trực tiếp với môi trường. Nó có chức năng thu thập dữ liệu hình ảnh từ cảm biến camera, đọc tín hiệu từ nút nhấn, điều khiển cơ cấu chấp hành, và thực thi các thuật toán AI tại biên như phát hiện và trích xuất đặc trưng khuôn mặt. Thiết bị này kết nối vào mạng cục bộ qua \textbf{Wi-Fi} để thiết lập kênh truyền bảo mật lên hệ thống trung tâm.
+
+\subsection{Tầng trung gian}
+Đóng vai trò là cầu nối giao tiếp phi đồng bộ, tầng này bao gồm \textbf{MQTT Broker} và \textbf{WebSocket Server}. MQTT Broker quản lý các kết nối từ ESP32-S3 thông qua mô hình Xuất bản/Đăng ký, đảm bảo việc chuyển tiếp bản tin và lệnh điều khiển diễn ra tức thời và đáng tin cậy. Trong khi đó, WebSocket Gateway thiết lập kết nối song công giữa Server và ứng dụng di động để cập nhật dữ liệu và đẩy thông báo tức thời.
+
+\subsection{Tầng ứng dụng}
+Tầng đỉnh cấp này xử lý logic nghiệp vụ, lưu trữ dữ liệu và tương tác với người dùng cuối, bao gồm \textbf{NestJS Server} và \textbf{Flutter Mobile Application}. NestJS Server hoạt động như một ứng dụng lai (Hybrid Application): vừa là MQTT Client để lắng nghe dữ liệu từ broker, xử lý và lưu trữ vào cơ sở dữ liệu, vừa cung cấp RESTful API cho các tác vụ quản trị và đóng vai trò WebSocket Server để đẩy thông báo realtime tới ứng dụng di động.
+
+\input{bang-ket-noi-pin.tex}
+
+\begin{parbox}{\textwidth}
+    \small\textbf{Ghi chú:} \textit{Cụm Camera kết nối trực tiếp qua socket FPC 24-pin dính liền trên bo mạch. Người dùng chỉ cần cắm cáp bẹt đi kèm, toàn bộ đường truyền tín hiệu tần số cao chạy ngầm hoàn toàn để tối ưu chống nhiễu, không thực hiện đi dây thủ công. Đối với khóa Solenoid, bắt buộc phải mắc song song ngược một Diode chống dòng ngược với cuộn dây khóa nhằm bảo vệ tiếp điểm Relay.}
+\end{parbox}
+
+
+%%% ===================================================================
+\newpage
+\section{Các biểu đồ UML mô hình hóa phần mềm}
+\label{sec:uml_diagrams}
+
 \subsection{Biểu đồ Use Case tổng thể và đặc tả Use Case}
-% Mô tả các Actor và các ca sử dụng tương ứng (Khoảng 600 từ)
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=0.7\textwidth]{images/ch3/usecase_diagram.png}
-% \caption{Biểu đồ Use Case tổng thể của hệ thống}
-% \end{figure}
 
-\subsection{Biểu đồ Hoạt động (Activity Diagram)}
-% Giải thích luồng xử lý thuật toán nhận dạng rẽ nhánh điều kiện (Khoảng 900 từ)
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=0.6\textwidth]{images/ch3/activity_recognition.png}
-% \caption{Biểu đồ hoạt động luồng xử lý nhận diện khuôn mặt mở cửa}
-% \end{figure}
+Biểu đồ Use Case tổng thể xác định ranh giới hệ thống, các phân hệ chức năng lõi và mối quan hệ giữa các thực thể tương tác. Hệ thống phân định rõ ba tác nhân cấu trúc bao gồm:
+\begin{enumerate}
+    \item \textbf{Cư dân / Người trong nhà:} Tác nhân sử dụng hệ thống hàng ngày để thực hiện các hành vi mở cửa qua nhận diện khuôn mặt hoặc nút nhấn vật lý.
+    \item \textbf{Quản trị viên / Chủ nhà:} Tác nhân nắm giữ quyền hạn cao nhất trong hệ thống, thực hiện các cấu hình quản trị, quản lý thành viên, xem lịch sử và phê duyệt/đăng ký dữ liệu sinh trắc học mới.
+    \item \textbf{Hệ thống:} Tác nhân phần cứng tự động, tương tác trực tiếp với môi trường để thu thập luồng ảnh, điều khiển cơ cấu khóa cơ khí và gửi các gói tin trạng thái.
+\end{{enumerate}
 
-\subsection{Biểu đồ Trình tự (Sequence Diagram)}
-% Mô tả thông điệp truyền tải thời gian thực đa giao thức HTTP/WebSocket/MQTT (Khoảng 900 từ)
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=0.9\textwidth]{images/ch3/sequence_remote_open.png}
-% \caption{Biểu đồ trình tự chức năng ra lệnh mở cửa từ xa từ Mobile App}
-% \end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/usecase-tông quan.png}
+    \caption{Biểu đồ Use Case tổng thể hệ thống Smart Lock.}
+    \label{fig:usecase_diagram}
+\end{figure}
 
-\section{Thiết kế cơ sở dữ liệu (Database Design)}
-\subsection{Thiết kế cấu trúc lưu trữ nhúng cục bộ trên bộ nhớ Flash}
-% Đặc tả phân vùng NVS, tính toán kích thước ô nhớ 512 dimensions float vector (Khoảng 400 từ)
+\newpage
+\input{bang-use-case-1}
+\FloatBarrier
 
-\subsection{Thiết kế mô hình dữ liệu quan hệ tập trung trên Server}
-% Phân tích cấu trúc các bảng thực thể (Users, Tenants, Occupants, AccessLogs...) 
-% Giải thích logic ánh xạ mối quan hệ thừa kế (R8a) và quan hệ 1-N (R7) (Khoảng 600 từ)
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=1.0\textwidth]{images/ch3/erd_diagram.png}
-% \caption{Sơ đồ quan hệ thực thể ERD hệ thống quản lý tập trung}
-% \end{figure}
+\newpage
+\input{bang-use-case-2}
+\FloatBarrier
+
+\newpage
+\input{bang-use-case-3}
+\FloatBarrier
+
+\newpage
+\input{bieu-do-hoat-dong.tex}
+\FloatBarrier
+
+\input{chuong3-4-1.tex}

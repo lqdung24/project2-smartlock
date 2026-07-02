@@ -50,10 +50,10 @@ class BottomNavBar extends StatelessWidget {
               onTap: () => onTap?.call(1),
               activeColor: colorScheme.primary,
             ),
-            // Tab 3: Members
+            // Tab 3: Faces
             _NavItem(
-              icon: currentIndex == 2 ? Icons.group : Icons.group_outlined,
-              label: 'Members',
+              icon: currentIndex == 2 ? Icons.face : Icons.face_outlined,
+              label: 'Faces',
               isActive: currentIndex == 2,
               onTap: () => onTap?.call(2),
               activeColor: colorScheme.primary,

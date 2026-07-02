@@ -4,12 +4,25 @@
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{amsmath}
-\usepackage{amssymb}
+\usepackage{amssymb}      % Hỗ trợ các ký hiệu toán học đặc biệt
+\usepackage{underscore}   % Tự động sửa lỗi xung đột của ký tự gạch dưới "_"
 \usepackage{amsfonts}
+\usepackage{booktabs}          % Cho đường kẻ bảng chuẩn chuẩn khoa học (\toprule, \midrule, \bottomrule)
+\usepackage{tabularx}          % Tự động căn chiều rộng cột và xuống dòng
+\usepackage{multirow}          % Gộp dòng
+\usepackage{makecell}
+\usepackage{ltablex}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{listings}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{calc}
 \geometry{left=3cm,right=2cm,top=2.5cm,bottom=2.5cm}
-
+\graphicspath{ {./images/} }
 \begin{document}
-
+\include{bia}
+\tableofcontents
 % Gọi các file chương vào
 \include{chuong1}
 \include{chuong2}

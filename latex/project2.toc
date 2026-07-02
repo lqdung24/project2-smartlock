@@ -1,0 +1,86 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {chapter}{\numberline {1}GIỚI THIỆU}{3}{}%
+\contentsline {section}{\numberline {1.1}Đặt vấn đề}{3}{}%
+\contentsline {section}{\numberline {1.2}Mục tiêu của đề tài}{4}{}%
+\contentsline {section}{\numberline {1.3}Đối tượng và phạm vi nghiên cứu}{5}{}%
+\contentsline {subsection}{\numberline {1.3.1}Đối tượng nghiên cứu}{5}{}%
+\contentsline {subsection}{\numberline {1.3.2}Phạm vi và giới hạn}{5}{}%
+\contentsline {section}{\numberline {1.4}Ý nghĩa khoa học và thực tiễn}{6}{}%
+\contentsline {subsection}{\numberline {1.4.1}Ý nghĩa khoa học}{6}{}%
+\contentsline {subsection}{\numberline {1.4.2}Ý nghĩa thực tiễn}{6}{}%
+\contentsline {section}{\numberline {1.5}Cấu trúc của báo cáo}{6}{}%
+\contentsline {chapter}{\numberline {2}CƠ SỞ LÝ THUYẾT VÀ CÔNG NGHỆ SỬ DỤNG}{7}{}%
+\contentsline {section}{\numberline {2.1}Cơ sở lý thuyết về thị giác máy tính và Nhận diện khuôn mặt}{7}{}%
+\contentsline {subsection}{\numberline {2.1.1}Bài toán phát hiện khuôn mặt}{7}{}%
+\contentsline {subsubsection}{Tổng quan về bản chất ma trận điểm ảnh}{7}{}%
+\contentsline {subsubsection}{Nguyên lý hoạt động phân tầng của kiến trúc MTMN}{8}{}%
+\contentsline {subsubsection}{Ý nghĩa của 5 điểm neo trong việc thực hiện Face Alignment}{8}{}%
+\contentsline {subsection}{\numberline {2.1.2}Bài toán trích xuất đặc trưng và nhận diện}{9}{}%
+\contentsline {subsubsection}{Bản chất toán học của Embedding Vector}{9}{}%
+\contentsline {paragraph}{Công thức toán học của các thang đo khoảng cách}{9}{}%
+\contentsline {paragraph}{Phân tích và lựa chọn giải pháp tối ưu cho vi điều khiển}{9}{}%
+\contentsline {subsection}{\numberline {2.1.3}Tổng quan về TinyML}{10}{}%
+\contentsline {subsubsection}{Phân tích các thách thức phần cứng}{10}{}%
+\contentsline {subsubsection}{Nguyên lý của kỹ thuật Lượng tử hóa}{11}{}%
+\contentsline {section}{\numberline {2.2}Công nghệ phần cứng sử dụng}{11}{}%
+\contentsline {subsection}{\numberline {2.2.1}Mô-đun điều khiển trung tâm: ESP32-S3 CAM}{11}{}%
+\contentsline {subsubsection}{Kiến trúc lõi kép Xtensa LX7 và Tập lệnh mở rộng Vector:}{12}{}%
+\contentsline {subsubsection}{Phân tích cấu trúc bộ nhớ SRAM và PSRAM trong tác vụ xử lý ảnh:}{12}{}%
+\contentsline {subsubsection}{Cảm biến ảnh SoC độ phân giải cao OV3660}{12}{}%
+\contentsline {paragraph}{Thông số quang học và công nghệ kiến trúc điểm ảnh:}{13}{}%
+\contentsline {paragraph}{Bộ xử lý tín hiệu hình ảnh (ISP) tích hợp nội chip:}{13}{}%
+\contentsline {paragraph}{Nguyên lý giao tiếp DVP (Digital Video Port) với ESP32-S3:}{13}{}%
+\contentsline {paragraph}{Tối ưu hóa cho bài toán nhận diện và chống giả mạo khuôn mặt:}{13}{}%
+\contentsline {subsection}{\numberline {2.2.2}Linh kiện ngoại vi: Cảm biến chạm}{14}{}%
+\contentsline {subsubsection}{Nguyên lý cảm ứng điện dung:}{14}{}%
+\contentsline {subsubsection}{Cấu trúc mạch và cơ chế giao tiếp:}{14}{}%
+\contentsline {section}{\numberline {2.3}Công nghệ phần mềm và Thư viện}{14}{}%
+\contentsline {subsection}{\numberline {2.3.1}ESP-IDF và Môi trường phát triển}{14}{}%
+\contentsline {subsection}{\numberline {2.3.2}Khung phần mềm ESP-WHO và thư viện ESP-DL}{15}{}%
+\contentsline {subsection}{\numberline {2.3.3}Nền tảng quản lý, giao thức giao tiếp và cơ sở dữ liệu}{16}{}%
+\contentsline {subsubsection}{Framework đa nền tảng Flutter}{16}{}%
+\contentsline {subsubsection}{Framework Backend NestJS và Prisma ORM}{16}{}%
+\contentsline {subsubsection}{Mô hình truyền thông kết hợp: REST API, WebSocket và MQTT}{16}{}%
+\contentsline {subsubsection}{Hệ quản trị cơ sở dữ liệu PostgreSQL}{17}{}%
+\contentsline {chapter}{\numberline {3}PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG}{18}{}%
+\contentsline {section}{\numberline {3.1}Phân tích yêu cầu hệ thống}{18}{}%
+\contentsline {subsection}{\numberline {3.1.1}Yêu cầu chức năng}{18}{}%
+\contentsline {subsubsection}{Phân hệ quản lý và xử lý dữ liệu tại thiết bị biên}{18}{}%
+\contentsline {subsubsection}{Phân hệ quản trị và tương tác qua Ứng dụng di động}{19}{}%
+\contentsline {subsubsection}{Phân hệ điều phối và logic vận hành trên Backend Server}{19}{}%
+\contentsline {subsection}{\numberline {3.1.2}Yêu cầu phi chức năng}{19}{}%
+\contentsline {subsubsection}{Độ trễ xử lý toán học AI tại thiết bị biên}{19}{}%
+\contentsline {subsubsection}{Tổng thời gian phản hồi hệ thống}{20}{}%
+\contentsline {subsubsection}{Tính sẵn sàng và độ bền bỉ của hệ thống}{20}{}%
+\contentsline {section}{\numberline {3.2}Kiến trúc tổng thể hệ thống}{20}{}%
+\contentsline {subsection}{\numberline {3.2.1}Tầng thiết bị}{21}{}%
+\contentsline {subsection}{\numberline {3.2.2}Tầng trung gian}{21}{}%
+\contentsline {subsection}{\numberline {3.2.3}Tầng ứng dụng}{21}{}%
+\contentsline {section}{\numberline {3.3}Các biểu đồ UML mô hình hóa phần mềm}{23}{}%
+\contentsline {subsection}{\numberline {3.3.1}Biểu đồ Use Case tổng thể và đặc tả Use Case}{23}{}%
+\contentsline {subsection}{\numberline {3.3.2}Biểu đồ Hoạt động (Activity Diagram)}{27}{}%
+\contentsline {section}{\numberline {3.4}Thiết kế cơ sở dữ liệu}{28}{}%
+\contentsline {subsection}{\numberline {3.4.1}Cấu trúc dữ liệu cục bộ trên Flash (NVS \& SPIFFS)}{28}{}%
+\contentsline {subsubsection}{Sơ đồ cấu trúc phân vùng nhớ Flash (Memory Map)}{28}{}%
+\contentsline {subsubsection}{Kiến trúc lưu trữ hệ thống tệp tin tĩnh trên phân vùng \texttt {face} (SPIFFS)}{29}{}%
+\contentsline {paragraph}{A. Tệp tin định danh khuôn mặt (\texttt {face.bin})}{29}{}%
+\contentsline {paragraph}{B. Tệp tin ánh xạ định danh (\texttt {face\_map.bin})}{29}{}%
+\contentsline {paragraph}{C. Tệp tin nhật ký ngoại tuyến (\texttt {offline\_log.bin})}{30}{}%
+\contentsline {subsection}{\numberline {3.4.2}Mô hình dữ liệu quan hệ trên Cloud Server}{30}{}%
+\contentsline {subsubsection}{Phân tích và thiết kế các thực thể chính}{30}{}%
+\contentsline {subsubsection}{Sơ đồ quan hệ thực thể (ERD)}{31}{}%
+\contentsline {chapter}{\numberline {4}TRIỂN KHAI THỬ NGHIỆM VÀ ĐÁNH GIÁ}{33}{}%
+\contentsline {section}{\numberline {4.1}Cấu hình môi trường và triển khai hệ thống}{33}{}%
+\contentsline {subsection}{\numberline {4.1.1}Môi trường phần cứng}{33}{}%
+\contentsline {subsubsection}{Mô hình thử nghiệm trên Breadboard}{33}{}%
+\contentsline {section}{\numberline {4.2}Kịch bản kiểm thử chức năng}{34}{}%
+\contentsline {subsection}{\numberline {4.2.1}Nhóm chức năng Kết nối BLE và Cấu hình thiết bị (TC\_BLE)}{35}{}%
+\contentsline {subsection}{\numberline {4.2.2}Nhóm chức năng Đăng ký khuôn mặt (TC\_ENROLL)}{35}{}%
+\contentsline {subsection}{\numberline {4.2.3}Nhóm chức năng Nhận diện và Mở khóa (TC\_UNLOCK)}{36}{}%
+\contentsline {section}{\numberline {4.3}Kết quả triển khai và Phân tích đánh giá}{37}{}%
+\contentsline {subsection}{\numberline {4.3.1}Giao diện ứng dụng điều khiển}{37}{}%
+\contentsline {subsection}{\numberline {4.3.2}Log hệ thống và kết quả nhận diện}{41}{}%
+\contentsline {subsection}{\numberline {4.3.3}Phân tích và Đánh giá}{42}{}%
+\contentsline {chapter}{\numberline {5}KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN}{44}{}%
+\contentsline {section}{\numberline {5.1}Các đóng góp chính của đề tài}{44}{}%
+\contentsline {section}{\numberline {5.2}Hướng phát triển trong tương lai}{45}{}%

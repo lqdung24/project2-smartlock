@@ -1,7 +1,142 @@
-\chapter{GIỚI THIỆU}
+\chapter{TRIỂN KHAI THỬ NGHIỆM VÀ ĐÁNH GIÁ}
 
-\section{Đặt vấn đề}
-Nội dung đặt vấn đề ở đây...
+\section{Cấu hình môi trường và triển khai hệ thống}
 
-\section{Mục tiêu của đề tài}
-Nội dung mục tiêu ở đây...
+\subsection{Môi trường phần cứng}
+
+Quá trình triển khai phần cứng cho Đồ án được thực hiện xoay quanh vi điều khiển trung tâm là module \textbf{ESP32-S3 Cam}, kết hợp cùng các ngoại vi cơ bản bao gồm module Camera OV3660 và đèn LED cảnh báo trạng thái.
+
+\subsubsection{Mô hình thử nghiệm trên Breadboard}
+
+Trong phạm vi thử nghiệm và đánh giá của Đồ án, thay vì hàn cố định lên bo mạch in (PCB) hay đóng gói vào hộp bảo vệ, toàn bộ linh kiện được kết nối và lắp ráp trực tiếp trên testboard (breadboard). Phương án triển khai này mang lại tính linh hoạt cao, giúp dễ dàng tinh chỉnh sơ đồ đấu nối mạch điện, kiểm tra mức độ ổn định của nguồn cấp cho camera, đồng thời hỗ trợ đánh giá trực quan và liên tục hiệu năng xử lý của thuật toán nhận diện khuôn mặt tại biên.
+
+\begin{figure}[H]
+    \centering
+    % TODO: Thay đường dẫn ảnh chụp mô hình testboard thật vào đây
+    \includegraphics[width=0.8\textwidth]{images/anh thuc te.jpg}
+    \caption{Hình ảnh mô hình phần cứng thử nghiệm thực tế trên breadboard}
+    \label{fig:real_model}
+\end{figure}
+
+\section{Kịch bản kiểm thử chức năng}
+
+Quá trình kiểm thử chức năng nhằm đảm bảo các luồng nghiệp vụ cốt lõi của hệ thống khóa thông minh hoạt động chính xác theo đúng thiết kế, từ khâu thiết lập ban đầu, đăng ký sinh trắc học cho đến thao tác kiểm soát ra vào thực tế.
+
+\subsection{Nhóm chức năng Kết nối BLE và Cấu hình thiết bị (TC\_BLE)}
+
+Nhóm kịch bản này kiểm tra khả năng phát sóng Bluetooth Low Energy (BLE) của ESP32-S3 và khả năng tiếp nhận, lưu trữ các thông số mạng (Wi-Fi, MQTT) vào bộ nhớ NVS.
+
+\input{bang-test-case-1}
+
+\subsection{Nhóm chức năng Đăng ký khuôn mặt (TC\_ENROLL)}
+
+Nhóm kịch bản này đánh giá độ ổn định của thuật toán khi trích xuất vector đặc trưng và thao tác ghi mảng dữ liệu vào tệp tin tĩnh \texttt{face.bin} trên bộ nhớ SPIFFS.
+
+\input{bang-test-case-2}
+
+\subsection{Nhóm chức năng Nhận diện và Mở khóa (TC\_UNLOCK)}
+
+Đây là nhóm kịch bản quan trọng nhất, đánh giá việc tính toán độ tương đồng Cosine của khuôn mặt và cơ chế điều khiển ngoại vi.
+
+\input{bang-test-case-3}
+
+\section{Kết quả triển khai và Phân tích đánh giá}
+\label{sec:ket-qua-danh-gia}
+
+Sau khi hoàn tất quá trình phát triển và kiểm thử các chức năng cốt lõi, ứng dụng di động và hệ thống nhúng đã được triển khai trong môi trường thực tế để đánh giá hiệu năng và trải nghiệm người dùng. Kết quả thu được cho thấy hệ thống hoạt động ổn định, đáp ứng tốt các yêu cầu đặt ra trong bản thiết kế.
+
+\subsection{Giao diện ứng dụng điều khiển}
+
+Ứng dụng di động đóng vai trò là giao diện chính để người dùng tương tác, cấu hình và quản lý thiết bị khóa thông minh. Dưới đây là hình ảnh giao diện của các chức năng chính đã được triển khai.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cac thiet bi tim thay qua ble.png}
+        \caption{Quét và tìm các thiết bị BLE}
+        \label{fig:ble-scan}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/Ket noi thiet bi qua ble.png}
+        \caption{Kết nối với thiết bị ESP32-S3}
+        \label{fig:ble-connect}
+    \end{subfigure}
+    \caption{Giao diện quét và kết nối Bluetooth Low Energy}
+    \label{fig:ble-connection-process}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/quan li cac thiet bi.png}
+        \caption{Quản lý các thiết bị đã kết nối}
+        \label{fig:device-list}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cau hinh thiet bị.png}
+        \caption{Cấu hình Wi-Fi và MQTT}
+        \label{fig:device-config}
+    \end{subfigure}
+    \caption{Giao diện quản lý và cấu hình thiết bị}
+    \label{fig:device-management}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/Dang ki khuon mat.png}
+        \caption{Đăng ký khuôn mặt người dùng mới}
+        \label{fig:face-enroll}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/man hinh quan li khuon mat.png}
+        \caption{Quản lý danh sách khuôn mặt}
+        \label{fig:face-management}
+    \end{subfigure}
+    \caption{Giao diện quản lý và đăng ký khuôn mặt}
+    \label{fig:face-features}
+\end{figure}
+
+\begin{figure}[H]
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/man hinh setting.png}
+        \caption{Cài đặt chung của ứng dụng}
+        \label{fig:app-settings}
+    \end{subfigure}
+    \caption{Giao diện chức năng phụ}
+    \label{fig:aux-functions}
+\end{figure}
+
+
+\subsection{Log hệ thống và kết quả nhận diện}
+
+Để giám sát hoạt động và gỡ lỗi, hệ thống ghi lại các sự kiện quan trọng. Log hệ thống cho thấy quá trình nhận diện khuôn mặt diễn ra thành công, trả về ID và tên của người dùng đã được đăng ký, xác nhận thuật toán hoạt động chính xác.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\textwidth]{images/man hinh log.png}
+    \caption{Log hệ thống ghi nhận sự kiện nhận diện khuôn mặt thành công}
+    \label{fig:system-log}
+\end{figure}
+
+\subsection{Phân tích và Đánh giá}
+\label{subsec:phan-tich-danh-gia}
+
+\begin{itemize}
+    \item \textbf{Về giao diện người dùng (UI):} Ứng dụng có giao diện trực quan, dễ sử dụng. Các chức năng chính như kết nối, cấu hình, đăng ký và quản lý khuôn mặt được bố trí hợp lý, giúp người dùng dễ dàng thao tác.
+    \item \textbf{Về hiệu năng nhận diện:} Qua hình ảnh log hệ thống (Hình \ref{fig:system-log}), có thể thấy quá trình nhận diện và trả về kết quả diễn ra nhanh chóng, với tổng thời gian xử lí dưới 1.5s. Hệ thống có khả năng phân biệt chính xác các khuôn mặt đã được đăng ký trong cơ sở dữ liệu.
+    \item \textbf{Về tính ổn định:} Hệ thống hoạt động ổn định trong quá trình thử nghiệm, kết nối BLE được duy trì tốt, các thao tác điều khiển và nhận diện đều cho phản hồi chính xác.
+    \item \textbf{Về mô hình thực tế (Hình \ref{fig:real_model}):} Mô hình thử nghiệm trên breadboard cho thấy tính khả thi của việc tích hợp các module phần cứng. Đây là tiền đề quan trọng để phát triển sản phẩm hoàn chỉnh với mạch in (PCB) và vỏ hộp bảo vệ.
+\end{itemize}
+
+Nhìn chung, kết quả triển khai thực tế đã đạt được các mục tiêu đề ra. Hệ thống khóa cửa thông minh sử dụng nhận diện khuôn mặt trên nền tảng ESP32-S3 đã chứng minh được tính hiệu quả và tiềm năng ứng dụng trong đời sống.

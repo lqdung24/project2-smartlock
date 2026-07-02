@@ -1,15 +1,30 @@
-%! Author = lqdung
-%! Date = 7/1/26
-
-% Preamble
-\documentclass[11pt]{article}
-
-% Packages
-\usepackage{amsmath}
-
-% Document
-\begin{document}
 
 
-
-\end{document}
+\begin{table}[htbp]
+    \centering
+    \caption{Bảng đặc tả Use Case Đăng ký khuôn mặt mới từ xa}
+    \label{tab:spec_uc_enroll}
+    \begin{tabular}{|p{3.5cm}|p{9.5cm}|}
+        \hline
+        \textbf{Trường thông tin} & \textbf{Nội dung đặc tả chi tiết} \\ \hline
+        \textbf{Tên Use Case} & Đăng ký khuôn mặt mới từ xa thông qua ứng dụng \\ \hline
+        \textbf{Mã hiệu} & UC-01 \\ \hline
+        \textbf{Tác nhân (Actors)} & Quản trị viên (Admin) \\ \hline
+        \textbf{Mô tả ngắn} & Quản trị viên sử dụng ứng dụng Flutter để nạp thông tin định danh và hình ảnh thành viên mới, dữ liệu sau đó được đồng bộ xuống bộ nhớ Flash của thiết bị ESP32-S3 qua MQTT. \\ \hline
+        \textbf{Tiền điều kiện} & - Admin đã đăng nhập thành công vào ứng dụng di động.\newline - Thiết bị ESP32-S3 đang trong trạng thái trực tuyến (Online) và kết nối với MQTT Broker. \\ \hline
+        \textbf{Hậu điều kiện} & Vector đặc trưng (Embedding) của thành viên mới được lưu trữ thành công vào phân vùng NVS Flash của ESP32-S3; cơ sở dữ liệu trên NestJS Server được cập nhật. \\ \hline
+        \textbf{Luồng sự kiện chính} &
+        1. Admin nhập tên nhãn định danh (Label) và chọn một ảnh chân dung từ thư viện điện thoại.\newline
+        2. Admin nhấn nút "Đăng ký".\newline
+        3. Ứng dụng tải ảnh lên Cloudinary và nhận về URL công khai.\newline
+        4. Ứng dụng gửi HTTP POST request chứa Label và URL ảnh tới NestJS Server.\newline
+        5. Server xác thực dữ liệu, đóng gói payload JSON và Publish bản tin MQTT xuống topic `esp32/hardwareid/register`.\newline
+        6. ESP32-S3 nhận bản tin, khởi tạo HTTP Client để tải byte ảnh từ URL Cloudinary.\newline
+        7. ESP32-S3 chạy pipeline TinyML để trích xuất vector 128-chiều và ghi vào Flash.\newline
+        8. ESP32-S3 phản hồi bản tin MQTT trạng thái `success` về Server.\newline
+        9. Server cập nhật DB và gửi HTTP Response 200 thông báo thành công cho ứng dụng. \\ \hline
+        \textbf{Luồng ngoại lệ} &
+        - \textit{Ngoại lệ 6a (Không tìm thấy mặt trong ảnh):} Hệ thống dừng xử lý, ESP32 bắn tin MQTT lỗi, ứng dụng hiển thị thông báo "Đăng ký thất bại: Không phát hiện khuôn mặt".\newline
+        - \textit{Ngoại lệ 5a (Mất kết nối MQTT):} Server không thể publish bản tin, trả về mã lỗi HTTP 504 Gateway Timeout sau thời gian chờ. \\ \hline
+    \end{tabular}
+\end{table}

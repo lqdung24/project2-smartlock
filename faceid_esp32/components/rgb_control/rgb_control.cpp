@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include "led_strip.h"
 #include "esp_log.h"
+#include "ai_handler.h"
 
 static const char *TAG = "RGB_LED";
 
@@ -42,6 +44,7 @@ void turn_off(void *arg)
 {
     (void)arg; // unused when called as timeout callback
     led_strip_clear(led_strip);
+    ai_set_enable(true);
 }
 
 void set_red()
@@ -64,4 +67,54 @@ void set_blue()
     // ESP_LOGI(TAG, "Màu Xanh Biển");
     led_strip_set_pixel(led_strip, 0, 0, 0, 25);
     led_strip_refresh(led_strip);
+}
+
+
+void set_yellow()
+{
+    // Bật màu VÀNG (Red: 25, Green: 25, Blue: 0)
+    // ESP_LOGI(TAG, "Màu Vàng");
+    led_strip_set_pixel(led_strip, 0, 25, 25, 0);
+    led_strip_refresh(led_strip);
+}
+
+/* ── Blink Yellow Task ──────────────────────────────────── */
+static volatile bool s_blink_running = false;
+static TaskHandle_t  s_blink_task_handle = NULL;
+
+static void blink_yellow_task(void *arg)
+{
+    bool on = false;
+    while (s_blink_running) {
+        on = !on;
+        if (on) {
+            led_strip_set_pixel(led_strip, 0, 25, 25, 0); // Vàng
+        } else {
+            led_strip_clear(led_strip);
+        }
+        led_strip_refresh(led_strip);
+        vTaskDelay(pdMS_TO_TICKS(500)); // Nhấp nháy 0.5s/chu kỳ
+    }
+    led_strip_clear(led_strip);
+    led_strip_refresh(led_strip);
+    s_blink_task_handle = NULL;
+    vTaskDelete(NULL);
+}
+
+void blink_yellow_start(void)
+{
+    if (s_blink_running) return; // Đã chạy rồi
+    s_blink_running = true;
+    xTaskCreate(blink_yellow_task, "blink_yellow", 2048, NULL, 4, &s_blink_task_handle);
+}
+
+void blink_yellow_stop(void)
+{
+    s_blink_running = false;
+    // Task tự delete sau khi vòng lặp kết thúc
+}
+
+bool blink_yellow_is_running(void)
+{
+    return s_blink_running;
 }

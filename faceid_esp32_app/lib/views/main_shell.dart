@@ -5,7 +5,7 @@ import 'widgets/bottom_nav_bar.dart';
 // Import các màn hình con
 import 'devices_screen.dart'; // Sửa lại import đúng
 import 'activity_screen.dart';
-import 'members_screen.dart';
+import 'faces_screen.dart';
 import 'settings_screen.dart';
 
 class MainShell extends StatefulWidget {
@@ -59,7 +59,7 @@ class _MainShellState extends State<MainShell> {
         children: [
           const HomeScreenContent(),
           const ActivityScreenContent(),
-          const MembersScreen(),
+          const FacesScreen(),
           const SettingsScreenContent(),
         ],
       ),

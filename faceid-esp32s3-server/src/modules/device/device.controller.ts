@@ -7,7 +7,7 @@ import { ConfirmDeviceDto } from './dto/confirm-device.dto';
 import { PublicApiResponse } from '../../common/decorators/public-api-response.decorator';
 import { DeviceActionDto } from './dto/device-action.dto';
 import { DeviceOwnerGuard } from './guards/device-owner.guard';
-import { RegisterFaceDto } from './dto/register-face.dto';
+import { ResetTokenDto } from './dto/reset-token.dto';
 
 @Controller('device')
 export class DeviceController {
@@ -21,6 +21,16 @@ export class DeviceController {
       throw new ForbiddenException('User is not associated with a house.');
     }
     return this.deviceService.getAllDevicesByHouseId(houseId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('ping')
+  async pingDevices(@Req() req: any) {
+    const houseId = req.user.houseId;
+    if (!houseId) {
+      throw new ForbiddenException('User is not associated with a house.');
+    }
+    return this.deviceService.pingDevices(houseId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -52,6 +62,13 @@ export class DeviceController {
     return this.deviceService.confirmDevice(confirmDeviceDto);
   }
 
+  // This endpoint is now public, without any guards.
+  @PublicApiResponse()
+  @Post('reset-token')
+  async resetToken(@Body() resetTokenDto: ResetTokenDto) {
+    return this.deviceService.resetMqttToken(resetTokenDto);
+  }
+
   @UseGuards(JwtAuthGuard, DeviceOwnerGuard)
   @Post('open')
   async openDevice(@Body() deviceActionDto: DeviceActionDto, @Req() req: any) {
@@ -59,11 +76,16 @@ export class DeviceController {
     return this.deviceService.openDevice(deviceActionDto.hardwareId, id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('regisface')
-  async registerFace(@Body() registerFaceDto: RegisterFaceDto, @Req() req: any) {
-    const { id } = req.user;
-    return this.deviceService.registerFace(registerFaceDto, id);
+  @UseGuards(JwtAuthGuard, DeviceOwnerGuard)
+  @Post(':hardwareId/reset')
+  async resetDevice(@Param('hardwareId') hardwareId: string) {
+    return this.deviceService.resetDevice(hardwareId);
+  }
+
+  @UseGuards(JwtAuthGuard, DeviceOwnerGuard)
+  @Post(':hardwareId/delete')
+  async deleteDevice(@Param('hardwareId') hardwareId: string) {
+    return this.deviceService.deleteDevice(hardwareId);
   }
 
   @UseGuards(JwtAuthGuard, DeviceOwnerGuard)

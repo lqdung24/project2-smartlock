@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException, RequestTimeoutException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException, RequestTimeoutException, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { RegisterDeviceDto } from './dto/register-device.dto';
@@ -6,18 +6,22 @@ import { ConfirmDeviceDto } from './dto/confirm-device.dto';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { MqttService } from '../mqtt/mqtt.service';
-import { RegisterFaceDto } from './dto/register-face.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Source } from '@prisma/client';
+import { Source, Status } from '@prisma/client';
+import { EventsGateway } from '../events/events.gateway';
+import { ResetTokenDto } from './dto/reset-token.dto';
 
 @Injectable()
 export class DeviceService {
+  private readonly logger = new Logger(DeviceService.name);
+
   constructor(
     private prisma: PrismaService,
     private redisService: RedisService,
     private configService: ConfigService,
     private mqttService: MqttService,
     private eventEmitter: EventEmitter2,
+    private eventsGateway: EventsGateway,
   ) {}
 
   private normalizeHardwareId(hardwareId: string): string {
@@ -32,6 +36,12 @@ export class DeviceService {
     const devices = await this.prisma.device.findMany({
       where: {
         houseId: houseId,
+        status: {
+          not: Status.DELETED,
+        },
+        hardwareId: {
+          not: '000000000000',
+        },
       },
     });
 
@@ -49,6 +59,38 @@ export class DeviceService {
     return devicesWithStatus;
   }
 
+  async pingDevices(houseId: number): Promise<any> {
+    const devices = await this.prisma.device.findMany({
+      where: { houseId, status: Status.ACTIVE },
+    });
+
+    if (devices.length === 0) {
+      return [];
+    }
+
+    const pingPayload = JSON.stringify({ cmd: 'ping' });
+    const onlineDevices = new Set<string>();
+
+    const listener = (hardwareId: string) => {
+      onlineDevices.add(hardwareId);
+    };
+    this.eventEmitter.on('device.pong', listener);
+
+    devices.forEach((device) => {
+      const topic = `esp32/${device.hardwareId}/control`;
+      this.mqttService.publish(topic, pingPayload);
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+
+    this.eventEmitter.removeListener('device.pong', listener);
+
+    return devices.map((device) => ({
+      ...device,
+      status: onlineDevices.has(device.hardwareId) ? 'online' : 'offline',
+    }));
+  }
+
   async getDeviceLogs(houseId: number) {
     return this.prisma.deviceLog.findMany({
       where: {
@@ -57,11 +99,17 @@ export class DeviceService {
         },
       },
       include: {
-        user: {
+        face: {
           select: {
             id: true,
-            name: true,
-            email: true,
+            label: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
         device: {
@@ -90,16 +138,14 @@ export class DeviceService {
       where: { hardwareId: normalizedId },
     });
 
-    if (existingDevice) {
-      if (resetToken) {
-        // Delete the existing device if resetToken is true
-        await this.prisma.device.delete({
-          where: { hardwareId: normalizedId },
-        });
-      } else {
-        throw new BadRequestException('Device with this hardware ID already exists');
-      }
+    // If a device exists and is active, and the user is not trying to reset it, throw an error.
+    if (existingDevice && existingDevice.status !== Status.DELETED && !resetToken) {
+      throw new BadRequestException('An active device with this hardware ID already exists. Use reset token to override.');
     }
+    
+    // If resetToken is true and device exists, we simply proceed.
+    // The old device record will be updated in the confirmDevice step.
+    // This avoids the foreign key constraint violation by not deleting.
 
     const provisionToken = crypto.randomBytes(32).toString('hex');
 
@@ -135,23 +181,64 @@ export class DeviceService {
     const tokenExpiry = new Date();
     tokenExpiry.setFullYear(tokenExpiry.getFullYear() + 1);
 
-    const newDevice = await this.prisma.device.create({
-      data: {
-        name: cachedData.name,
-        hardwareId: normalizedId,
-        houseId: cachedData.houseId,
-        mqttToken: mqttToken,
-        tokenExpiry: tokenExpiry,
-      },
+    const deviceData = {
+      name: cachedData.name,
+      hardwareId: normalizedId,
+      houseId: cachedData.houseId,
+      mqttToken: mqttToken,
+      tokenExpiry: tokenExpiry,
+      status: Status.ACTIVE, // Ensure the device is active
+    };
+
+    const confirmedDevice = await this.prisma.device.upsert({
+      where: { hardwareId: normalizedId },
+      update: deviceData,
+      create: deviceData,
     });
 
     await this.redisService.del(redisKey);
 
     return {
-      mqttToken: newDevice.mqttToken,
+      mqttToken: confirmedDevice.mqttToken,
       mqttHost: this.configService.get<string>('MQTT_HOST_PUBLIC'),
       mqttPort: this.configService.get<number>('MQTT_PORT'),
       message: 'Device confirmed successfully.',
+    };
+  }
+
+  async resetMqttToken(resetTokenDto: ResetTokenDto) {
+    const { hardwareId, oldToken } = resetTokenDto;
+    const normalizedId = this.normalizeHardwareId(hardwareId);
+
+    const device = await this.prisma.device.findUnique({
+      where: { hardwareId: normalizedId },
+    });
+
+    if (!device) {
+      throw new NotFoundException(`Device with hardware ID ${normalizedId} not found.`);
+    }
+
+    if (device.mqttToken !== oldToken) {
+      throw new UnauthorizedException('Invalid old token.');
+    }
+
+    const newMqttToken = crypto.randomBytes(64).toString('hex');
+    const newExpiry = new Date();
+    newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+
+    await this.prisma.device.update({
+      where: { hardwareId: normalizedId },
+      data: {
+        mqttToken: newMqttToken,
+        tokenExpiry: newExpiry,
+      },
+    });
+
+    return {
+      mqttToken: newMqttToken,
+      mqttHost: this.configService.get<string>('MQTT_HOST_PUBLIC'),
+      mqttPort: this.configService.get<number>('MQTT_PORT'),
+      message: 'Token reset successfully.',
     };
   }
 
@@ -169,56 +256,40 @@ export class DeviceService {
     this.mqttService.publish(topic, payload);
 
     // Log the event from the app
-    await this.prisma.deviceLog.create({
+    const newLog = await this.prisma.deviceLog.create({
       data: {
         deviceId: device.id,
-        userId: userId,
         time: new Date(),
         source: Source.APP,
       },
+      include: {
+        device: true,
+      },
     });
+
+    this.eventsGateway.sendToAll('unlock_event', newLog);
 
     return { message: `Command 'open' sent to device ${hardwareId}` };
   }
 
-  async registerFace(registerFaceDto: RegisterFaceDto, userId: number): Promise<any> {
-    const { hardwareId, imageUrl, label } = registerFaceDto;
-    const timestamp = Date.now();
-    
-    const transformation = 'w_240,h_320,c_fill,f_jpg,fl_progressive:none';
-    const transformedImageUrl = imageUrl.replace('/upload/', `/upload/${transformation}/`);
-
-    const redisKey = `${userId}_${label || 'null'}_${timestamp}`;
-    
-    await this.redisService.set(redisKey, { label: label || null, imageUrl: transformedImageUrl, userId, createdAt: new Date() }, 300);
-
+  async resetDevice(hardwareId: string) {
     const topic = `esp32/${hardwareId}/control`;
-    const mqttPayload = JSON.stringify({
-      cmd: 'regis',
-      img_url: transformedImageUrl,
-      user_id: userId,
-      redis_key: redisKey
-    });
-    
-    this.mqttService.publish(topic, mqttPayload);
-    
-    return new Promise((resolve, reject) => {
-      const waitTimeout = setTimeout(() => {
-        this.eventEmitter.removeAllListeners(redisKey);
-        reject(new RequestTimeoutException('ESP device did not respond in time.'));
-      }, 30000);
+    const payload = JSON.stringify({ cmd: 'reset' });
+    this.mqttService.publish(topic, payload);
+    return { message: `Command 'reset' sent to device ${hardwareId}` };
+  }
 
-      this.eventEmitter.once(redisKey, (data) => {
-        clearTimeout(waitTimeout);
-        // Nếu có trường 'error', reject để trả về lỗi 500
-        if (data.error) {
-          reject(new InternalServerErrorException(data.error));
-        } else {
-          // Nếu không, resolve để trả về 200 OK với payload nhận được
-          resolve(data);
-        }
-      });
+  async deleteDevice(hardwareId: string) {
+    const topic = `esp32/${hardwareId}/control`;
+    const payload = JSON.stringify({ cmd: 'delete' });
+    this.mqttService.publish(topic, payload);
+
+    await this.prisma.device.update({
+      where: { hardwareId },
+      data: { status: Status.DELETED },
     });
+
+    return { message: `Device ${hardwareId} marked as deleted.` };
   }
 
   async enableAi(hardwareId: string, status: number) {

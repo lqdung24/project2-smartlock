@@ -7,6 +7,7 @@ idf_component_register(SRCS "app_manager.cpp"
                 mqtt_connection
                 wifi_handler
                 camera_handler
+                espressif__esp32-camera
                 ai_handler
                 driver
                 touch_sensor

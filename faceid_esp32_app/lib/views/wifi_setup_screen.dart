@@ -46,7 +46,7 @@ class _WifiSetupScreenState extends ConsumerState<WifiSetupScreen> {
   final _ssidController = TextEditingController();
   final _passwordController = TextEditingController();
   final _deviceNameController = TextEditingController();
-  bool _resetToken = false;
+  bool _resetDevice = false;
   bool _isLogicInitialized = false;
 
   @override
@@ -95,18 +95,26 @@ class _WifiSetupScreenState extends ConsumerState<WifiSetupScreen> {
     if (ssid.isNotEmpty && deviceName.isNotEmpty) {
       stepNotifier.setStep(WifiSetupStep.sendingCredentials);
       try {
-        // 1. Register device and get provisionToken
-        final provisionToken = await ref.read(deviceRepositoryProvider).registerDevice(deviceName, widget.deviceId, _resetToken);
-
-        if (provisionToken == null) {
-          throw Exception('Không nhận được provision token.');
+        String? provisionToken;
+        if (_resetDevice) {
+          // 1. Register device and get provisionToken only if _resetDevice is true
+          provisionToken = await ref.read(deviceRepositoryProvider).registerDevice(deviceName, widget.deviceId, _resetDevice);
+          if (provisionToken == null) {
+            throw Exception('Không nhận được provision token.');
+          }
         }
 
         // 2. Send credentials and token to ESP32
         final bleService = ref.read(bleServiceProvider);
         final serverIp = AppConfig.serverIpPublic;
         final serverPort = AppConfig.serverPort;
-        final command = 'device_name=$deviceName;wifi_ssid=$ssid;wifi_pass=$password;server_host=$serverIp;server_port=$serverPort;provision_token=$provisionToken;';
+        
+        String command = 'device_name=$deviceName;wifi_ssid=$ssid;wifi_pass=$password;server_host=$serverIp;server_port=$serverPort;';
+        if (provisionToken != null) {
+          command += 'provision_token=$provisionToken;';
+        } else {
+          command += 'newdevice=false;';
+        }
         
         await bleService.write(
           widget.deviceId,
@@ -118,8 +126,8 @@ class _WifiSetupScreenState extends ConsumerState<WifiSetupScreen> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã gửi thông tin và đăng ký thiết bị thành công.'),
+          SnackBar(
+            content: Text(_resetDevice ? 'Đã gửi thông tin và đăng ký thiết bị thành công.' : 'Đã gửi thông tin Wi-Fi thành công.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -243,11 +251,11 @@ class _WifiSetupScreenState extends ConsumerState<WifiSetupScreen> {
                   ),
                   const SizedBox(height: 16),
                   CheckboxListTile(
-                    title: const Text("Reset Token"),
-                    value: _resetToken,
+                    title: const Text("Reset device"),
+                    value: _resetDevice,
                     onChanged: (newValue) {
                       setState(() {
-                        _resetToken = newValue ?? false;
+                        _resetDevice = newValue ?? false;
                       });
                     },
                     controlAffinity: ListTileControlAffinity.leading,
